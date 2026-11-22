@@ -13,39 +13,15 @@ cd "$(dirname "$0")/.."
 ROOT="$PWD"
 . "$ROOT/scripts/lib.sh"
 
-CONFIGURATION="Debug"
-if [ "${1:-}" = "--release" ]; then
-    CONFIGURATION="Release"
-    shift
-fi
-
-PROJECT="${PROJECT:-Stayman.xcodeproj}"
-SCHEME="${SCHEME:-Stayman}"
-DERIVED_DATA="${DERIVED_DATA:-build/DerivedData}"
-
 APP_NAME="$(config_value APP_NAME)"
 if [ -z "$APP_NAME" ]; then
     echo "APP_NAME is missing from Config/App.xcconfig" >&2
     exit 1
 fi
 
-xcodebuild \
-    -project "$PROJECT" \
-    -scheme "$SCHEME" \
-    -configuration "$CONFIGURATION" \
-    -derivedDataPath "$DERIVED_DATA" \
-    build
-
-SRC="$DERIVED_DATA/Build/Products/$CONFIGURATION/$APP_NAME.app"
+SRC="$(./scripts/bundle.sh "$@" | tail -n 1)"
 DEST="${DEST:-/Applications/$APP_NAME.app}"
 LSREGISTER="${LSREGISTER:-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister}"
-
-if [ ! -d "$SRC" ]; then
-    echo "Build succeeded but $SRC was not found" >&2
-    exit 1
-fi
-
-codesign --verify --deep --strict "$SRC"
 
 # The binary lives at <bundle>/Contents/MacOS/<executable name>; signalling it
 # by path avoids matching unrelated processes that share the app name.
@@ -63,5 +39,5 @@ rm -rf "$DEST"
 ditto "$SRC" "$DEST"
 "$LSREGISTER" -f "$DEST"
 
-echo "Installed $CONFIGURATION build to $DEST"
+echo "Installed $SRC to $DEST"
 open "$DEST"

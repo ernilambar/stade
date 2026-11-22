@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Check tag matches MARKETING_VERSION
+    name: Check tag matches APP_VERSION
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -36,32 +36,35 @@ jobs:
           ref: ${{ inputs.ref || github.ref }}
           fetch-depth: 1
 
-      - name: Check tag matches MARKETING_VERSION
+      - name: Check tag matches APP_VERSION
         env:
           TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          version="$(sed -n 's/^[[:space:]]*MARKETING_VERSION = \([^;]*\);/\1/p' \
-            Stayman.xcodeproj/project.pbxproj | head -n 1)"
+          version="$(sed -n 's/^APP_VERSION[[:space:]]*=[[:space:]]*//p' \
+            Config/App.xcconfig | head -n 1 | sed 's/[[:space:]]*$//')"
           if [ -z "$version" ]; then
-            echo "MARKETING_VERSION not found in Stayman.xcodeproj/project.pbxproj" >&2
+            echo "APP_VERSION not found in Config/App.xcconfig" >&2
             exit 1
           fi
           if [ "v$version" != "$TAG" ]; then
-            echo "Tag $TAG does not match MARKETING_VERSION $version" >&2
+            echo "Tag $TAG does not match APP_VERSION $version" >&2
             exit 1
           fi
 
   build:
     name: Build and publish (macOS arm64)
     needs: verify
-    # macos-15 runners are Apple Silicon, so the ad-hoc signed bundle is arm64.
-    runs-on: macos-15
+    # macos-26 runners are Apple Silicon, so the ad-hoc signed bundle is arm64.
+    runs-on: macos-26
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref || github.ref }}
           fetch-depth: 1
+
+      - name: Test
+        run: swift test
 
       - name: Package
         run: ZIP_NAME=Stayman-macos-arm64 OUTPUT_DIR=dist ./scripts/build.sh

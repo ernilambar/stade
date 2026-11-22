@@ -1,7 +1,8 @@
-import XCTest
+import Foundation
+import Testing
 @testable import AppCore
 
-final class ScriptTests: XCTestCase {
+struct ScriptTests {
     private let logDirectory = URL(fileURLWithPath: "/tmp/logs")
 
     private func makeScript(
@@ -19,66 +20,69 @@ final class ScriptTests: XCTestCase {
         )
     }
 
-    func testPlistEncoding() throws {
+    @Test func plistEncoding() throws {
         let plist = try makeScript().plist(logDirectory: logDirectory)
 
-        XCTAssertEqual(plist["Label"] as? String, AppInfo.agentLabelPrefix + "web")
-        XCTAssertEqual(plist["AppCommand"] as? String, "web serve")
-        XCTAssertEqual(
-            plist["ProgramArguments"] as? [String],
-            ["/bin/zsh", "-l", "-i", "-c", "exec web serve"]
+        #expect(plist["Label"] as? String == AppInfo.agentLabelPrefix + "web")
+        #expect(plist["AppCommand"] as? String == "web serve")
+        #expect(
+            plist["ProgramArguments"] as? [String]
+                == ["/bin/zsh", "-l", "-i", "-c", "exec web serve"]
         )
-        XCTAssertEqual(plist["WorkingDirectory"] as? String, "/Users/me")
-        XCTAssertEqual(plist["RunAtLoad"] as? Bool, true)
-        XCTAssertEqual(plist["KeepAlive"] as? [String: Bool], ["SuccessfulExit": false])
-        XCTAssertEqual(plist["StandardOutPath"] as? String, "/tmp/logs/web.log")
-        XCTAssertEqual(plist["StandardErrorPath"] as? String, "/tmp/logs/web.log")
-        XCTAssertEqual(plist["AssociatedBundleIdentifiers"] as? [String], [AppInfo.bundleID])
+        #expect(plist["WorkingDirectory"] as? String == "/Users/me")
+        #expect(plist["RunAtLoad"] as? Bool == true)
+        #expect(plist["KeepAlive"] as? [String: Bool] == ["SuccessfulExit": false])
+        #expect(plist["StandardOutPath"] as? String == "/tmp/logs/web.log")
+        #expect(plist["StandardErrorPath"] as? String == "/tmp/logs/web.log")
+        // `swift test` runs outside an app bundle, so the bundle ID is empty
+        // there and the key is omitted.
+        let bundleIDs: [String]? = AppInfo.bundleID.isEmpty ? nil : [AppInfo.bundleID]
+        #expect(plist["AssociatedBundleIdentifiers"] as? [String] == bundleIDs)
     }
 
-    func testPlistEncodingRoundTrip() throws {
+    @Test func plistEncodingRoundTrip() throws {
         let script = makeScript()
         let plist = try script.plist(logDirectory: logDirectory)
 
-        XCTAssertEqual(Script(plist: plist), script)
+        #expect(Script(plist: plist) == script)
     }
 
-    func testRestartOnCrashOffOmitsKeepAlive() throws {
+    @Test func restartOnCrashOffOmitsKeepAlive() throws {
         let plist = try makeScript(restartOnCrash: false).plist(logDirectory: logDirectory)
 
-        XCTAssertNil(plist["KeepAlive"])
-        XCTAssertEqual(Script(plist: plist)?.restartOnCrash, false)
+        #expect(plist["KeepAlive"] == nil)
+        #expect(Script(plist: plist)?.restartOnCrash == false)
     }
 
-    func testDecodingReadsCommandFromCustomKey() throws {
+    @Test func decodingReadsCommandFromCustomKey() throws {
         let script = makeScript(command: "cd app && npm run dev")
         var plist = try script.plist(logDirectory: logDirectory)
         plist["ProgramArguments"] = ["/bin/sh", "-c", "something else"]
 
-        XCTAssertEqual(Script(plist: plist)?.command, "cd app && npm run dev")
+        #expect(Script(plist: plist)?.command == "cd app && npm run dev")
     }
 
-    func testDecodingRejectsForeignOrMalformedPlists() throws {
+    @Test func decodingRejectsForeignOrMalformedPlists() throws {
         var foreign = try makeScript().plist(logDirectory: logDirectory)
         foreign["Label"] = "com.example.other"
-        XCTAssertNil(Script(plist: foreign))
+        #expect(Script(plist: foreign) == nil)
 
         var missingCommand = try makeScript().plist(logDirectory: logDirectory)
         missingCommand.removeValue(forKey: "AppCommand")
-        XCTAssertNil(Script(plist: missingCommand))
+        #expect(Script(plist: missingCommand) == nil)
 
         var badName = try makeScript().plist(logDirectory: logDirectory)
         badName["Label"] = AppInfo.agentLabelPrefix + "Not Valid"
-        XCTAssertNil(Script(plist: badName))
+        #expect(Script(plist: badName) == nil)
     }
 
-    func testWrapSimpleCommand() {
-        XCTAssertEqual(CommandWrapper.wrap("web serve"), "exec web serve")
-        XCTAssertEqual(CommandWrapper.wrap("  web serve\n"), "exec web serve")
-        XCTAssertEqual(CommandWrapper.wrap("exec web serve"), "exec web serve")
+    @Test func wrapSimpleCommand() {
+        #expect(CommandWrapper.wrap("web serve") == "exec web serve")
+        #expect(CommandWrapper.wrap("  web serve\n") == "exec web serve")
+        #expect(CommandWrapper.wrap("exec web serve") == "exec web serve")
     }
 
-    func testWrapLeavesCompoundCommandsAlone() {
+    @Test func wrapLeavesCompoundCommandsAlone() {
         let commands = [
             "cd app && npm run dev",
             "npm run build || exit 1",
@@ -89,39 +93,39 @@ final class ScriptTests: XCTestCase {
         ]
 
         for command in commands {
-            XCTAssertEqual(CommandWrapper.wrap(command), command)
-            XCTAssertFalse(CommandWrapper.isSimple(command), command)
+            #expect(CommandWrapper.wrap(command) == command)
+            #expect(!CommandWrapper.isSimple(command), "\(command)")
         }
     }
 
-    func testNameRules() {
+    @Test func nameRules() {
         for valid in ["web", "api", "web-2", "web_2", "a"] {
-            XCTAssertTrue(ScriptName.isValid(valid), valid)
+            #expect(ScriptName.isValid(valid), "\(valid)")
         }
 
         for invalid in ["", "Web", "web serve", "web.dev", "../web", "web/2", "wéb"] {
-            XCTAssertFalse(ScriptName.isValid(invalid), invalid)
+            #expect(!ScriptName.isValid(invalid), "\(invalid)")
         }
     }
 
-    func testNameValidationThrows() {
-        XCTAssertThrowsError(try ScriptName.validate("")) { error in
-            XCTAssertEqual(error as? ScriptError, .emptyName)
+    @Test func nameValidationThrows() {
+        #expect(throws: ScriptError.emptyName) {
+            try ScriptName.validate("")
         }
-        XCTAssertThrowsError(try ScriptName.validate("Bad Name")) { error in
-            XCTAssertEqual(error as? ScriptError, .invalidName("Bad Name"))
+        #expect(throws: ScriptError.invalidName("Bad Name")) {
+            try ScriptName.validate("Bad Name")
         }
-        XCTAssertThrowsError(try ScriptName.validate("web", existing: ["web"])) { error in
-            XCTAssertEqual(error as? ScriptError, .duplicateName("web"))
+        #expect(throws: ScriptError.duplicateName("web")) {
+            try ScriptName.validate("web", existing: ["web"])
         }
-        XCTAssertNoThrow(try ScriptName.validate("web", existing: ["api"]))
+        #expect(throws: Never.self) { try ScriptName.validate("web", existing: ["api"]) }
     }
 
-    func testEmptyCommandIsRejected() {
+    @Test func emptyCommandIsRejected() {
         let script = makeScript(command: " \n ")
 
-        XCTAssertThrowsError(try script.plist(logDirectory: logDirectory)) { error in
-            XCTAssertEqual(error as? ScriptError, .emptyCommand)
+        #expect(throws: ScriptError.emptyCommand) {
+            try script.plist(logDirectory: logDirectory)
         }
     }
 }
