@@ -48,7 +48,7 @@ struct ContentView: View {
                 } label: {
                     Label("Edit", systemImage: "pencil")
                 }
-                .disabled(selectedScript == nil)
+                .disabled(!canModifySelection)
                 .help("Edit Script")
 
                 Button {
@@ -56,7 +56,7 @@ struct ContentView: View {
                 } label: {
                     Label("Remove", systemImage: "minus")
                 }
-                .disabled(selectedScript == nil)
+                .disabled(!canModifySelection)
                 .help("Remove Script")
 
                 Button {
@@ -113,6 +113,13 @@ struct ContentView: View {
         return model.scripts.first { $0.id == selection }
     }
 
+    private var canModifySelection: Bool {
+        guard let selectedScript else {
+            return false
+        }
+        return !model.busyLabels.contains(selectedScript.label)
+    }
+
     private var errorBinding: Binding<Bool> {
         Binding(
             get: { model.errorMessage != nil },
@@ -165,22 +172,32 @@ private struct ScriptRow: View {
 
             Spacer(minLength: 12)
 
-            Text(statusText)
-                .font(.caption)
-                .monospacedDigit()
-                .foregroundStyle(.secondary)
-                .frame(width: 100, alignment: .trailing)
+            Group {
+                if isBusy {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Text(statusText)
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(width: 100, alignment: .trailing)
 
             HStack(spacing: 8) {
                 Button("Start") {
                     model.start(script)
                 }
+                .disabled(isBusy)
                 Button("Stop") {
                     model.stop(script)
                 }
+                .disabled(isBusy)
                 Button("Restart") {
                     model.restart(script)
                 }
+                .disabled(isBusy)
                 Button("Logs") {
                     onShowLog()
                 }
@@ -189,6 +206,10 @@ private struct ScriptRow: View {
             .controlSize(.small)
         }
         .padding(.vertical, 4)
+    }
+
+    private var isBusy: Bool {
+        model.busyLabels.contains(script.label)
     }
 
     private var statusText: String {

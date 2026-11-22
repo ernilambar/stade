@@ -109,8 +109,9 @@ enum CommandWrapper {
             return trimmed
         }
 
+        // `exec VAR=value cmd` runs `VAR=value` as a command, so skip assignments.
         let firstWord = trimmed.prefix { !$0.isWhitespace }
-        guard firstWord != "exec" else {
+        guard firstWord != "exec", !firstWord.contains("=") else {
             return trimmed
         }
 

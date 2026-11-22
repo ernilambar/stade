@@ -62,6 +62,9 @@ Version lives only in `Config/App.xcconfig` (`APP_VERSION`, `APP_BUILD`);
   `APP_BUNDLE_ID`); the Swift module is always `AppCore`. Swift code reads the
   name and bundle ID from `Bundle` via `AppInfo`; never hardcode the product name or slug in sources. Keep plist keys
   vendor-neutral (for example `AppCommand`), not app-named.
+- `KeepAlive.SuccessfulExit` implies `RunAtLoad`, so "Start at login: off" is
+  implemented by `launchctl disable` after `Launchctl.start`; a disabled job
+  keeps its crash restarts but is not loaded at login.
 - The plists in `~/Library/LaunchAgents/` are the only source of truth; there is
   no database. Labels are `AppInfo.agentLabelPrefix + name`, logs live under
   `AppInfo.logDirectory`, and removing a script keeps its log.

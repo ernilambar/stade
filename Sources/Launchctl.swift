@@ -217,7 +217,8 @@ struct Launchctl: @unchecked Sendable {
     }
 
     /// `bootout` returns before the process exits; bootstrapping too soon fails.
-    func waitUntilUnloaded(label: String, timeout: TimeInterval = 5) throws {
+    /// The default outlasts launchd's 20 s `ExitTimeOut` before it sends SIGKILL.
+    func waitUntilUnloaded(label: String, timeout: TimeInterval = 30) throws {
         let deadline = Date().addingTimeInterval(timeout)
 
         while try isLoaded(label) {
@@ -230,12 +231,18 @@ struct Launchctl: @unchecked Sendable {
 
     // MARK: Actions
 
+    /// `KeepAlive.SuccessfulExit` implies `RunAtLoad`, so a script that must not
+    /// start at login is disabled once running. Disabling a loaded job keeps its
+    /// crash restarts but stops launchd from loading it at the next login.
     func start(_ script: Script) throws {
         try enable(script.label)
         if !(try isLoaded(script.label)) {
             try bootstrap(script)
         }
         try kickstart(script.label)
+        if !script.startAtLogin {
+            try disable(script.label)
+        }
     }
 
     func stop(_ script: Script) throws {

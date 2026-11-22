@@ -82,6 +82,11 @@ struct ScriptTests {
         #expect(CommandWrapper.wrap("exec web serve") == "exec web serve")
     }
 
+    @Test func wrapSkipsLeadingAssignments() {
+        #expect(CommandWrapper.wrap("PORT=3000 npm start") == "PORT=3000 npm start")
+        #expect(CommandWrapper.wrap("npm start --port=3000") == "exec npm start --port=3000")
+    }
+
     @Test func wrapLeavesCompoundCommandsAlone() {
         let commands = [
             "cd app && npm run dev",

@@ -6,7 +6,15 @@ final class ScriptListModel: ObservableObject {
     @Published private(set) var scripts: [Script] = []
     @Published private(set) var statuses: [String: LaunchctlStatus] = [:]
     @Published private(set) var isRefreshing = false
+    /// Labels with an action queued or running.
+    @Published private(set) var busyLabels: Set<String> = []
     @Published var errorMessage: String?
+
+    private var refreshQueued = false
+    /// The last refresh failure, so a persistent one is shown only once.
+    private var lastRefreshError: String?
+    /// Actions run one at a time, in the order they were requested.
+    private var lastAction: Task<Void, Never>?
 
     private let store: LaunchAgentStore
     private let launchctl: Launchctl
@@ -29,6 +37,7 @@ final class ScriptListModel: ObservableObject {
 
     func refresh() {
         guard !isRefreshing else {
+            refreshQueued = true
             return
         }
         isRefreshing = true
@@ -58,8 +67,18 @@ final class ScriptListModel: ObservableObject {
                         statuses[script.label] = result.snapshot.status(for: script.label)
                     }
                     self.statuses = statuses
+                    self.lastRefreshError = nil
                 case .failure(let error):
-                    self.present(error)
+                    let message = error.localizedDescription
+                    if message != self.lastRefreshError {
+                        self.present(message)
+                    }
+                    self.lastRefreshError = message
+                }
+
+                if self.refreshQueued {
+                    self.refreshQueued = false
+                    self.refresh()
                 }
             }
         }
@@ -69,23 +88,24 @@ final class ScriptListModel: ObservableObject {
 
     func start(_ script: Script) {
         let launchctl = self.launchctl
-        perform { try launchctl.start(script) }
+        perform(script.label) { try launchctl.start(script) }
     }
 
     func stop(_ script: Script) {
         let launchctl = self.launchctl
-        perform { try launchctl.stop(script) }
+        perform(script.label) { try launchctl.stop(script) }
     }
 
     func restart(_ script: Script) {
         let launchctl = self.launchctl
-        perform { try launchctl.restart(script) }
+        perform(script.label) { try launchctl.restart(script) }
     }
 
     func add(_ script: Script) {
         let store = self.store
         let launchctl = self.launchctl
-        perform {
+        perform(script.label) {
+            try store.validateNewName(script.name)
             try store.write(script)
             try launchctl.start(script)
         }
@@ -96,7 +116,7 @@ final class ScriptListModel: ObservableObject {
     func update(_ script: Script, to updated: Script) {
         let store = self.store
         let launchctl = self.launchctl
-        perform {
+        perform(script.label) {
             guard updated.name == script.name else {
                 throw ScriptError.invalidName(updated.name)
             }
@@ -150,13 +170,14 @@ final class ScriptListModel: ObservableObject {
     func remove(_ script: Script) {
         let store = self.store
         let launchctl = self.launchctl
-        perform {
+        perform(script.label) {
             try deleteScript(script, store: store, launchctl: launchctl)
         }
     }
 
+    /// Checks against the loaded list; `add` re-checks the disk off the main actor.
     func validateNewName(_ name: String) throws {
-        try store.validateNewName(name)
+        try ScriptName.validate(name, existing: Set(scripts.map(\.name)))
     }
 
     // MARK: Logs
@@ -167,8 +188,12 @@ final class ScriptListModel: ObservableObject {
 
     // MARK: Helpers
 
-    private func perform(_ work: @escaping @Sendable () throws -> Void) {
-        Task.detached(priority: .userInitiated) {
+    private func perform(_ label: String, _ work: @escaping @Sendable () throws -> Void) {
+        busyLabels.insert(label)
+        let previous = lastAction
+        lastAction = Task.detached(priority: .userInitiated) {
+            await previous?.value
+
             let message: String?
             do {
                 try work()
@@ -178,6 +203,7 @@ final class ScriptListModel: ObservableObject {
             }
 
             await MainActor.run {
+                self.busyLabels.remove(label)
                 if let message {
                     self.present(message)
                 }

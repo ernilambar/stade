@@ -2,5 +2,5 @@
 // Renaming the product means changing APP_NAME here.
 APP_NAME = Stade
 APP_BUNDLE_ID = net.nilambar.stade
-APP_VERSION = 0.1.2
-APP_BUILD = 3
+APP_VERSION = 0.1.0
+APP_BUILD = 1

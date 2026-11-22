@@ -1,5 +1,4 @@
 import AppKit
-import Combine
 import SwiftUI
 
 struct LogView: View {
@@ -11,8 +10,6 @@ struct LogView: View {
     @StateBox private var text = ""
     @StateBox private var logExists = false
     @StateBox private var errorMessage: String?
-
-    private let refreshTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -65,7 +62,9 @@ struct LogView: View {
                 .disabled(!logExists)
 
                 Button("Clear log") {
-                    clearLog()
+                    Task {
+                        await clearLog()
+                    }
                 }
                 .disabled(!logExists)
 
@@ -79,11 +78,11 @@ struct LogView: View {
             .padding()
         }
         .frame(width: 760, height: 480)
-        .onAppear {
-            reload()
-        }
-        .onReceive(refreshTimer) { _ in
-            reload()
+        .task {
+            while !Task.isCancelled {
+                await reload()
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+            }
         }
         .alert("Error", isPresented: errorBinding) {
             Button("OK", role: .cancel) {
@@ -111,27 +110,34 @@ struct LogView: View {
         }
     }
 
-    private func reload() {
-        logExists = FileManager.default.fileExists(atPath: logURL.path)
+    /// Reads off the main actor; `nil` means the log does not exist yet.
+    private func reload() async {
+        let url = logURL
+        let result = await Task.detached(priority: .utility) { () -> Result<String?, Error> in
+            guard FileManager.default.fileExists(atPath: url.path) else {
+                return .success(nil)
+            }
+            return Result { try LogFile.tail(at: url) }
+        }.value
 
-        guard logExists else {
-            text = ""
-            return
-        }
-
-        do {
-            text = try LogFile.tail(at: logURL)
-        } catch {
+        switch result {
+        case .success(let tail):
+            logExists = tail != nil
+            text = tail ?? ""
+        case .failure(let error):
             errorMessage = error.localizedDescription
         }
     }
 
-    private func clearLog() {
-        do {
-            try LogFile.clear(at: logURL)
-            reload()
-        } catch {
+    private func clearLog() async {
+        let url = logURL
+        let result = await Task.detached(priority: .utility) {
+            Result { try LogFile.clear(at: url) }
+        }.value
+
+        if case .failure(let error) = result {
             errorMessage = error.localizedDescription
         }
+        await reload()
     }
 }

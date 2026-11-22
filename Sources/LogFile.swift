@@ -5,6 +5,8 @@ enum LogFile {
     static let maximumBytes: Int64 = 5 * 1024 * 1024
     static let retainedBytes: Int64 = 1 * 1024 * 1024
     static let defaultLineCount = 500
+    /// Caps a tail read when lines are long or newlines are missing.
+    static let maximumTailBytes = 256 * 1024
 
     /// Cuts a log over 5 MB down to its last 1 MB, in place.
     static func truncateIfNeeded(at url: URL) throws {
@@ -53,7 +55,7 @@ enum LogFile {
             newlines += chunk.reduce(0) { $0 + ($1 == 0x0A ? 1 : 0) }
             data.insert(contentsOf: chunk, at: 0)
 
-            if newlines > lineCount {
+            if newlines > lineCount || data.count >= maximumTailBytes {
                 break
             }
         }

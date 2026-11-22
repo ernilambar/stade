@@ -19,12 +19,12 @@ struct LaunchctlTests {
 
     private let success = LaunchctlResult(status: 0, stdout: "", stderr: "")
 
-    private func makeScript(name: String = "web") -> Script {
+    private func makeScript(name: String = "web", startAtLogin: Bool = true) -> Script {
         Script(
             name: name,
             command: "web serve",
             workingDirectory: NSHomeDirectory(),
-            startAtLogin: true,
+            startAtLogin: startAtLogin,
             restartOnCrash: true
         )
     }
@@ -116,6 +116,22 @@ struct LaunchctlTests {
             ["list"],
             ["bootstrap", "gui/501", store.plistURL(for: script.name).path],
             ["kickstart", "gui/501/\(script.label)"],
+        ])
+    }
+
+    @Test func startDisablesWhenNotStartingAtLogin() throws {
+        let script = makeScript(startAtLogin: false)
+        let fake = FakeRunner { _ in self.success }
+        let (launchctl, store) = makeSystem(runner: fake.run)
+
+        try launchctl.start(script)
+
+        #expect(fake.calls == [
+            ["enable", "gui/501/\(script.label)"],
+            ["list"],
+            ["bootstrap", "gui/501", store.plistURL(for: script.name).path],
+            ["kickstart", "gui/501/\(script.label)"],
+            ["disable", "gui/501/\(script.label)"],
         ])
     }
 
