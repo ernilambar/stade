@@ -127,7 +127,7 @@ enum LaunchctlOutput {
 // MARK: - launchctl
 
 /// Wraps `/bin/launchctl` for the current GUI session.
-struct Launchctl {
+struct Launchctl: @unchecked Sendable {
     typealias Runner = ([String]) throws -> LaunchctlResult
 
     private static let executablePath = "/bin/launchctl"

@@ -2,7 +2,7 @@ import Foundation
 import os
 
 /// Reads and writes launch agent plists. The plists are the source of truth.
-final class LaunchAgentStore {
+final class LaunchAgentStore: @unchecked Sendable {
     let fileManager: FileManager
     let agentsDirectory: URL
     let logDirectory: URL
