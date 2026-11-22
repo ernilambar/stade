@@ -25,7 +25,7 @@ struct AppEntry: App {
             CommandGroup(replacing: .toolbar) {}
             CommandGroup(replacing: .sidebar) {}
             CommandGroup(replacing: .help) {
-                Button("\(AppInfo.name) Repository") {
+                Button("GitHub Repository") {
                     NSWorkspace.shared.open(AboutPanel.repositoryURL)
                 }
                 Button("License") {

@@ -2,5 +2,5 @@
 // Renaming the product means changing APP_NAME here.
 APP_NAME = Stayman
 APP_BUNDLE_ID = net.nilambar.stayman
-APP_VERSION = 0.1.1
-APP_BUILD = 2
+APP_VERSION = 0.1.2
+APP_BUILD = 3
