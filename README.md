@@ -18,18 +18,26 @@ macOS 13 or later on Apple Silicon (M1 or newer).
 
 ## Install
 
-Install with the install script:
+With Homebrew:
+
+```sh
+brew install --cask ernilambar/tap/stade
+```
+
+Or with the install script:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/ernilambar/stade/main/scripts/install.sh | sh
 ```
 
-This downloads the latest release and installs it into `/Applications`.
+Both install into `/Applications`; the script downloads the latest release, the
+cask also removes the quarantine flag so Gatekeeper does not block the first
+launch.
 
 ## Docs
 
-- [Install options](docs/install.md) — manual download, first launch, updating,
-  and uninstalling
+- [Install options](docs/install.md) — Homebrew, manual download, first launch,
+  updating, and uninstalling
 - [Usage](docs/usage.md) — how scripts run, with PHP server and background
   worker use cases
 

@@ -1,7 +1,16 @@
 # Installing
 
-The [README](../README.md#install) covers the install script. This page covers
-the manual download, first launch, updating, and uninstalling.
+The [README](../README.md#install) covers the install script and Homebrew. This
+page covers the manual download, first launch, updating, and uninstalling.
+
+## Homebrew
+
+```sh
+brew install --cask ernilambar/tap/stade
+```
+
+The cask removes the quarantine flag after installing, so the Gatekeeper step
+below only applies to a manual download.
 
 ## Manual download
 
