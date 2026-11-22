@@ -5,8 +5,8 @@ final class ScriptTests: XCTestCase {
     private let logDirectory = URL(fileURLWithPath: "/tmp/logs")
 
     private func makeScript(
-        name: String = "glot",
-        command: String = "glot serve",
+        name: String = "web",
+        command: String = "web serve",
         startAtLogin: Bool = true,
         restartOnCrash: Bool = true
     ) -> Script {
@@ -22,17 +22,17 @@ final class ScriptTests: XCTestCase {
     func testPlistEncoding() throws {
         let plist = try makeScript().plist(logDirectory: logDirectory)
 
-        XCTAssertEqual(plist["Label"] as? String, AppInfo.agentLabelPrefix + "glot")
-        XCTAssertEqual(plist["AppCommand"] as? String, "glot serve")
+        XCTAssertEqual(plist["Label"] as? String, AppInfo.agentLabelPrefix + "web")
+        XCTAssertEqual(plist["AppCommand"] as? String, "web serve")
         XCTAssertEqual(
             plist["ProgramArguments"] as? [String],
-            ["/bin/zsh", "-l", "-i", "-c", "exec glot serve"]
+            ["/bin/zsh", "-l", "-i", "-c", "exec web serve"]
         )
         XCTAssertEqual(plist["WorkingDirectory"] as? String, "/Users/me")
         XCTAssertEqual(plist["RunAtLoad"] as? Bool, true)
         XCTAssertEqual(plist["KeepAlive"] as? [String: Bool], ["SuccessfulExit": false])
-        XCTAssertEqual(plist["StandardOutPath"] as? String, "/tmp/logs/glot.log")
-        XCTAssertEqual(plist["StandardErrorPath"] as? String, "/tmp/logs/glot.log")
+        XCTAssertEqual(plist["StandardOutPath"] as? String, "/tmp/logs/web.log")
+        XCTAssertEqual(plist["StandardErrorPath"] as? String, "/tmp/logs/web.log")
         XCTAssertEqual(plist["AssociatedBundleIdentifiers"] as? [String], [AppInfo.bundleID])
     }
 
@@ -73,9 +73,9 @@ final class ScriptTests: XCTestCase {
     }
 
     func testWrapSimpleCommand() {
-        XCTAssertEqual(CommandWrapper.wrap("glot serve"), "exec glot serve")
-        XCTAssertEqual(CommandWrapper.wrap("  glot serve\n"), "exec glot serve")
-        XCTAssertEqual(CommandWrapper.wrap("exec glot serve"), "exec glot serve")
+        XCTAssertEqual(CommandWrapper.wrap("web serve"), "exec web serve")
+        XCTAssertEqual(CommandWrapper.wrap("  web serve\n"), "exec web serve")
+        XCTAssertEqual(CommandWrapper.wrap("exec web serve"), "exec web serve")
     }
 
     func testWrapLeavesCompoundCommandsAlone() {
@@ -95,11 +95,11 @@ final class ScriptTests: XCTestCase {
     }
 
     func testNameRules() {
-        for valid in ["glot", "uplet", "glot-2", "glot_2", "a"] {
+        for valid in ["web", "api", "web-2", "web_2", "a"] {
             XCTAssertTrue(ScriptName.isValid(valid), valid)
         }
 
-        for invalid in ["", "Glot", "glot serve", "glot.dev", "../glot", "glot/2", "glôt"] {
+        for invalid in ["", "Web", "web serve", "web.dev", "../web", "web/2", "wéb"] {
             XCTAssertFalse(ScriptName.isValid(invalid), invalid)
         }
     }
@@ -111,10 +111,10 @@ final class ScriptTests: XCTestCase {
         XCTAssertThrowsError(try ScriptName.validate("Bad Name")) { error in
             XCTAssertEqual(error as? ScriptError, .invalidName("Bad Name"))
         }
-        XCTAssertThrowsError(try ScriptName.validate("glot", existing: ["glot"])) { error in
-            XCTAssertEqual(error as? ScriptError, .duplicateName("glot"))
+        XCTAssertThrowsError(try ScriptName.validate("web", existing: ["web"])) { error in
+            XCTAssertEqual(error as? ScriptError, .duplicateName("web"))
         }
-        XCTAssertNoThrow(try ScriptName.validate("glot", existing: ["uplet"]))
+        XCTAssertNoThrow(try ScriptName.validate("web", existing: ["api"]))
     }
 
     func testEmptyCommandIsRejected() {

@@ -37,12 +37,12 @@ struct EditScriptView: View {
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 10) {
                 GridRow {
                     Text("Name")
-                    TextField("glot", text: $name)
+                    TextField("my-app", text: $name)
                         .disabled(isEditing)
                 }
                 GridRow {
                     Text("Command")
-                    TextField("glot serve", text: $command)
+                    TextField("npm run dev", text: $command)
                 }
                 GridRow {
                     Text("Directory")

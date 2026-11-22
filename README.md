@@ -1,8 +1,7 @@
 # Stayman
 
-A small, native macOS app to add, edit, remove, start, and stop background
-scripts (dev servers such as `glot serve` or `uplet serve`). Each script runs as
-a launch agent, so it starts at login and keeps running after the app quits.
+A native macOS app that runs background scripts as launch agents, with
+add/edit/start/stop/remove controls and login-time startup.
 
 ## Features
 

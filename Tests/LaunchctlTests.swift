@@ -18,10 +18,10 @@ final class LaunchctlTests: XCTestCase {
 
     private let success = LaunchctlResult(status: 0, stdout: "", stderr: "")
 
-    private func makeScript(name: String = "glot") -> Script {
+    private func makeScript(name: String = "web") -> Script {
         Script(
             name: name,
-            command: "glot serve",
+            command: "web serve",
             workingDirectory: NSHomeDirectory(),
             startAtLogin: true,
             restartOnCrash: true

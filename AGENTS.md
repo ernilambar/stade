@@ -34,6 +34,29 @@ No dependencies to install. Release packaging is done by `make build`; the
 - Project file check: `plutil -lint Stayman.xcodeproj/project.pbxproj`
 - Script check: `bash -n scripts/*.sh`
 
+## Release
+
+Version lives only in the Xcode build settings; there is no `Info.plist` file
+(plists are generated with `GENERATE_INFOPLIST_FILE = YES`).
+
+- Bump version: set `MARKETING_VERSION` in `Stayman.xcodeproj/project.pbxproj`
+  to the release version. There are four occurrences (app and test targets,
+  Debug and Release); keep all of them identical.
+- Build number: bump `CURRENT_PROJECT_VERSION` in the same file if needed; all
+  four occurrences must match.
+- Do not add or hardcode a version in Swift sources, scripts, or
+  `Config/App.xcconfig`.
+- Tag: the user creates and pushes `v<MARKETING_VERSION>` (for example
+  `v0.2.0`). Never commit, tag, or push yourself, and never create, move, or
+  delete tags. The `Release` workflow's `verify` job fails when the tag and
+  `MARKETING_VERSION` differ, then `build` publishes
+  `Stayman-macos-arm64.zip` to the GitHub release.
+- Rebuild an existing release: the user runs the `Release` workflow manually
+  with its `tag` input; it replaces the asset without retagging.
+- Local package: `make build` (or `./scripts/build.sh`) writes
+  `build/Stayman-<version>.zip`; the workflow sets `ZIP_NAME` and `OUTPUT_DIR`
+  as shown in `CONTRIBUTING.md`.
+
 ## Conventions
 
 - App identity lives only in `Config/App.xcconfig` (`APP_NAME`, `APP_BUNDLE_ID`,
