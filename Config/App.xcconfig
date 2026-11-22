@@ -1,0 +1,6 @@
+// Single rename surface for the app.
+// Renaming the product means changing APP_NAME here (plus the Xcode project,
+// target and scheme names, which are not used by the code at runtime).
+APP_NAME = Stayman
+APP_BUNDLE_ID = net.nilambar.stayman
+APP_MODULE_NAME = AppCore
