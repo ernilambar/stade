@@ -8,12 +8,12 @@ struct EditScriptView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    @State private var name: String
-    @State private var command: String
-    @State private var workingDirectory: String
-    @State private var startAtLogin: Bool
-    @State private var restartOnCrash: Bool
-    @State private var errorMessage: String?
+    @StateBox private var name: String
+    @StateBox private var command: String
+    @StateBox private var workingDirectory: String
+    @StateBox private var startAtLogin: Bool
+    @StateBox private var restartOnCrash: Bool
+    @StateBox private var errorMessage: String?
 
     init(model: ScriptListModel, script: Script? = nil) {
         self.model = model

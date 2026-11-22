@@ -1,5 +1,5 @@
 #!/bin/sh
-# Shared helpers for scripts/build.sh and scripts/dev.sh.
+# Shared helpers for the scripts in this directory.
 # Source it; never run it directly. Callers set ROOT to the repository root.
 
 # config_value KEY: read a value from Config/App.xcconfig, without the

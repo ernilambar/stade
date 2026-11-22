@@ -5,9 +5,9 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var model: ScriptListModel
 
-    @State private var selection: String?
-    @State private var presentedSheet: PresentedSheet?
-    @State private var pendingRemoval: Script?
+    @StateBox private var selection: String?
+    @StateBox private var presentedSheet: PresentedSheet?
+    @StateBox private var pendingRemoval: Script?
 
     private let refreshTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
 

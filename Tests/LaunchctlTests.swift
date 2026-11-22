@@ -1,7 +1,8 @@
-import XCTest
+import Foundation
+import Testing
 @testable import AppCore
 
-final class LaunchctlTests: XCTestCase {
+struct LaunchctlTests {
     private final class FakeRunner {
         var calls: [[String]] = []
         var handler: ([String]) -> LaunchctlResult
@@ -48,7 +49,7 @@ final class LaunchctlTests: XCTestCase {
 
     // MARK: Parsing
 
-    func testParseList() {
+    @Test func parseList() {
         let output = """
         PID\tStatus\tLabel
         1234\t0\tcom.example.running
@@ -58,19 +59,19 @@ final class LaunchctlTests: XCTestCase {
 
         let agents = LaunchctlOutput.parseList(output)
 
-        XCTAssertEqual(agents.count, 3)
-        XCTAssertEqual(agents["com.example.running"], ListedAgent(pid: 1234, lastExitCode: 0))
-        XCTAssertEqual(agents["com.example.exited"], ListedAgent(pid: nil, lastExitCode: 1))
-        XCTAssertEqual(agents["com.example.stale"], ListedAgent(pid: 40989, lastExitCode: -9))
+        #expect(agents.count == 3)
+        #expect(agents["com.example.running"] == ListedAgent(pid: 1234, lastExitCode: 0))
+        #expect(agents["com.example.exited"] == ListedAgent(pid: nil, lastExitCode: 1))
+        #expect(agents["com.example.stale"] == ListedAgent(pid: 40989, lastExitCode: -9))
     }
 
-    func testParseListSkipsHeaderAndMalformedRows() {
+    @Test func parseListSkipsHeaderAndMalformedRows() {
         let output = "PID\tStatus\tLabel\n\nnot a row\n-\t0\tvalid.label\n"
 
-        XCTAssertEqual(LaunchctlOutput.parseList(output), ["valid.label": ListedAgent(pid: nil, lastExitCode: 0)])
+        #expect(LaunchctlOutput.parseList(output) == ["valid.label": ListedAgent(pid: nil, lastExitCode: 0)])
     }
 
-    func testParseDisabled() {
+    @Test func parseDisabled() {
         let output = """
         \tdisabled services = {
         \t\t"com.example.off" => disabled
@@ -80,13 +81,13 @@ final class LaunchctlTests: XCTestCase {
         \t}
         """
 
-        XCTAssertEqual(
-            LaunchctlOutput.parseDisabled(output),
-            ["com.example.off", "com.example.legacy-off"]
+        #expect(
+            LaunchctlOutput.parseDisabled(output)
+                == ["com.example.off", "com.example.legacy-off"]
         )
     }
 
-    func testSnapshotStatus() {
+    @Test func snapshotStatus() {
         let snapshot = LaunchctlSnapshot(
             listed: [
                 "app.running": ListedAgent(pid: 42, lastExitCode: 0),
@@ -95,22 +96,22 @@ final class LaunchctlTests: XCTestCase {
             disabled: ["app.disabled"]
         )
 
-        XCTAssertEqual(snapshot.status(for: "app.running"), .running(pid: 42))
-        XCTAssertEqual(snapshot.status(for: "app.exited"), .exited(code: 2))
-        XCTAssertEqual(snapshot.status(for: "app.disabled"), .disabled)
-        XCTAssertEqual(snapshot.status(for: "app.missing"), .notLoaded)
+        #expect(snapshot.status(for: "app.running") == .running(pid: 42))
+        #expect(snapshot.status(for: "app.exited") == .exited(code: 2))
+        #expect(snapshot.status(for: "app.disabled") == .disabled)
+        #expect(snapshot.status(for: "app.missing") == .notLoaded)
     }
 
     // MARK: Actions
 
-    func testStartBootstrapsAndKickstarts() throws {
+    @Test func startBootstrapsAndKickstarts() throws {
         let script = makeScript()
         let fake = FakeRunner { _ in self.success }
         let (launchctl, store) = makeSystem(runner: fake.run)
 
         try launchctl.start(script)
 
-        XCTAssertEqual(fake.calls, [
+        #expect(fake.calls == [
             ["enable", "gui/501/\(script.label)"],
             ["list"],
             ["bootstrap", "gui/501", store.plistURL(for: script.name).path],
@@ -118,7 +119,7 @@ final class LaunchctlTests: XCTestCase {
         ])
     }
 
-    func testStartSkipsBootstrapWhenAlreadyLoaded() throws {
+    @Test func startSkipsBootstrapWhenAlreadyLoaded() throws {
         let script = makeScript()
         let fake = FakeRunner { arguments in
             arguments == ["list"]
@@ -129,14 +130,14 @@ final class LaunchctlTests: XCTestCase {
 
         try launchctl.start(script)
 
-        XCTAssertEqual(fake.calls, [
+        #expect(fake.calls == [
             ["enable", "gui/501/\(script.label)"],
             ["list"],
             ["kickstart", "gui/501/\(script.label)"],
         ])
     }
 
-    func testStartAcceptsAlreadyLoadedBootstrapError() throws {
+    @Test func startAcceptsAlreadyLoadedBootstrapError() throws {
         let script = makeScript()
         let fake = FakeRunner { arguments in
             if arguments.first == "bootstrap" {
@@ -146,10 +147,10 @@ final class LaunchctlTests: XCTestCase {
         }
         let (launchctl, _) = makeSystem(runner: fake.run)
 
-        XCTAssertNoThrow(try launchctl.start(script))
+        #expect(throws: Never.self) { try launchctl.start(script) }
     }
 
-    func testStartSurfacesLaunchctlStderr() {
+    @Test func startSurfacesLaunchctlStderr() {
         let script = makeScript()
         let fake = FakeRunner { arguments in
             arguments.first == "enable"
@@ -158,19 +159,16 @@ final class LaunchctlTests: XCTestCase {
         }
         let (launchctl, _) = makeSystem(runner: fake.run)
 
-        XCTAssertThrowsError(try launchctl.start(script)) { error in
-            XCTAssertEqual(
-                error as? LaunchctlError,
-                .commandFailed(
-                    command: "launchctl enable gui/501/\(script.label)",
-                    status: 1,
-                    stderr: "Operation not permitted"
-                )
-            )
+        #expect(throws: LaunchctlError.commandFailed(
+            command: "launchctl enable gui/501/\(script.label)",
+            status: 1,
+            stderr: "Operation not permitted"
+        )) {
+            try launchctl.start(script)
         }
     }
 
-    func testStopDisablesBootsOutAndWaits() throws {
+    @Test func stopDisablesBootsOutAndWaits() throws {
         let script = makeScript()
         var listCalls = 0
         let fake = FakeRunner { arguments in
@@ -185,7 +183,7 @@ final class LaunchctlTests: XCTestCase {
 
         try launchctl.stop(script)
 
-        XCTAssertEqual(fake.calls, [
+        #expect(fake.calls == [
             ["disable", "gui/501/\(script.label)"],
             ["bootout", "gui/501/\(script.label)"],
             ["list"],
@@ -193,7 +191,7 @@ final class LaunchctlTests: XCTestCase {
         ])
     }
 
-    func testStopAcceptsNotLoadedBootout() throws {
+    @Test func stopAcceptsNotLoadedBootout() throws {
         let script = makeScript()
         let fake = FakeRunner { arguments in
             if arguments.first == "bootout" {
@@ -203,10 +201,10 @@ final class LaunchctlTests: XCTestCase {
         }
         let (launchctl, _) = makeSystem(runner: fake.run)
 
-        XCTAssertNoThrow(try launchctl.stop(script))
+        #expect(throws: Never.self) { try launchctl.stop(script) }
     }
 
-    func testStopTimesOutWhenStillLoaded() {
+    @Test func stopTimesOutWhenStillLoaded() {
         let script = makeScript()
         let fake = FakeRunner { arguments in
             arguments == ["list"]
@@ -215,12 +213,12 @@ final class LaunchctlTests: XCTestCase {
         }
         let (launchctl, _) = makeSystem(runner: fake.run)
 
-        XCTAssertThrowsError(try launchctl.waitUntilUnloaded(label: script.label, timeout: 0.05)) { error in
-            XCTAssertEqual(error as? LaunchctlError, .timeout(label: script.label))
+        #expect(throws: LaunchctlError.timeout(label: script.label)) {
+            try launchctl.waitUntilUnloaded(label: script.label, timeout: 0.05)
         }
     }
 
-    func testRestartLoadedUsesKickstartK() throws {
+    @Test func restartLoadedUsesKickstartK() throws {
         let script = makeScript()
         let fake = FakeRunner { arguments in
             arguments == ["list"]
@@ -231,20 +229,20 @@ final class LaunchctlTests: XCTestCase {
 
         try launchctl.restart(script)
 
-        XCTAssertEqual(fake.calls, [
+        #expect(fake.calls == [
             ["list"],
             ["kickstart", "-k", "gui/501/\(script.label)"],
         ])
     }
 
-    func testRestartUnloadedStarts() throws {
+    @Test func restartUnloadedStarts() throws {
         let script = makeScript()
         let fake = FakeRunner { _ in self.success }
         let (launchctl, store) = makeSystem(runner: fake.run)
 
         try launchctl.restart(script)
 
-        XCTAssertEqual(fake.calls, [
+        #expect(fake.calls == [
             ["list"],
             ["enable", "gui/501/\(script.label)"],
             ["list"],

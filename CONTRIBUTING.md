@@ -3,23 +3,22 @@
 ## Requirements
 
 - macOS 13 or later on Apple Silicon (M1 or newer)
-- Xcode 15 or later (Swift 5.9+)
+- Command Line Tools (`xcode-select --install`) or Xcode, with Swift 5.9+
 - No third-party dependencies
 
 ## Setup
 
-```sh
-xcode-select -p
-open Stayman.xcodeproj
-```
-
-`xcode-select -p` must point inside `Xcode.app`; the Command Line Tools alone
-cannot build the SwiftUI app. Run the `Stayman` scheme, or build from the
-terminal:
+The app is a Swift package; there is no Xcode project. Build and run it from
+the terminal:
 
 ```sh
-xcodebuild -project Stayman.xcodeproj -scheme Stayman -configuration Debug build
+swift build                       # compile only
+./scripts/bundle.sh               # build/debug/Stayman.app
+./scripts/bundle.sh --release     # build/release/Stayman.app
 ```
+
+Use `@StateBox` instead of `@State` in views; the macOS 27 SDK's `@State`
+macro needs a plugin that only Xcode provides.
 
 To test login items and relaunch behaviour, install a Debug build into
 `/Applications` and open it:
@@ -33,20 +32,24 @@ Pass `--release` to install a Release build instead.
 ## Tests
 
 ```sh
-xcodebuild test -project Stayman.xcodeproj -scheme Stayman
+swift test
 ```
+
+Tests use swift-testing (`@Test`, `#expect`); XCTest ships only with Xcode.
+With Command Line Tools 6.4 a run can fail with `plugin for module
+'TestingMacros' not found`; that is a toolchain bug, so rerun it. CI is the
+source of truth.
 
 ## Checks before a pull request
 
 ```sh
-xcodebuild -project Stayman.xcodeproj -scheme Stayman -configuration Debug build
-xcodebuild test -project Stayman.xcodeproj -scheme Stayman
-plutil -lint Stayman.xcodeproj/project.pbxproj
-bash -n scripts/*.sh
+swift build -Xswiftc -warnings-as-errors
+./scripts/bundle.sh
+bash -n scripts/*.sh && shellcheck scripts/*.sh
 ```
 
-Both `xcodebuild` commands must exit 0. If Xcode is unavailable, say so rather
-than claiming a pass.
+The `CI` workflow runs the same checks plus `swift test` on every push to
+`main` and every non-draft pull request; it must pass before merging.
 
 ## Code layout
 
@@ -60,7 +63,10 @@ than claiming a pass.
 | `Sources/EditScriptView.swift` | Add and edit sheet |
 | `Sources/LogView.swift`, `Sources/LogFile.swift` | Log viewer, tail, compaction |
 | `Tests/` | Unit tests |
-| `Config/App.xcconfig` | App name, bundle ID, module name |
+| `Resources/AppIcon.iconset` | App icon |
+| `Package.swift` | SwiftPM targets |
+| `scripts/bundle.sh` | Builds the `.app` and its `Info.plist` |
+| `Config/App.xcconfig` | App name, bundle ID, version |
 
 App identity is defined only in `Config/App.xcconfig`; Swift code reads it from
 the bundle via `AppInfo`. See [AGENTS.md](AGENTS.md) for the full conventions.
@@ -79,8 +85,8 @@ release workflow does:
 ZIP_NAME=Stayman-macos-arm64 OUTPUT_DIR=dist ./scripts/build.sh
 ```
 
-1. Bump `MARKETING_VERSION` in `Stayman.xcodeproj/project.pbxproj`.
-2. Tag `v<version>` matching `MARKETING_VERSION` and push the tag.
+1. Bump `APP_VERSION` in `Config/App.xcconfig`.
+2. Tag `v<version>` matching `APP_VERSION` and push the tag.
 3. The `Release` workflow verifies the tag, builds the arm64 bundle, and
    publishes `Stayman-macos-arm64.zip` to the GitHub release.
 4. Re-run the workflow from the Actions tab with an existing tag to rebuild

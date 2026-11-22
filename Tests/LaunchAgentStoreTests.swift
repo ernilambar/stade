@@ -1,11 +1,12 @@
-import XCTest
+import Foundation
+import Testing
 @testable import AppCore
 
-final class LaunchAgentStoreTests: XCTestCase {
-    private var root: URL!
-    private var store: LaunchAgentStore!
+final class LaunchAgentStoreTests {
+    private let root: URL
+    private let store: LaunchAgentStore
 
-    override func setUpWithError() throws {
+    init() throws {
         root = FileManager.default.temporaryDirectory
             .appendingPathComponent("LaunchAgentStoreTests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -15,7 +16,7 @@ final class LaunchAgentStoreTests: XCTestCase {
         )
     }
 
-    override func tearDownWithError() throws {
+    deinit {
         try? FileManager.default.removeItem(at: root)
     }
 
@@ -29,47 +30,47 @@ final class LaunchAgentStoreTests: XCTestCase {
         )
     }
 
-    func testWriteListRoundTrip() throws {
+    @Test func writeListRoundTrip() throws {
         let script = makeScript()
 
         try store.write(script)
 
-        XCTAssertTrue(FileManager.default.fileExists(atPath: store.plistURL(for: "web").path))
-        XCTAssertTrue(FileManager.default.fileExists(atPath: store.logDirectory.path))
-        XCTAssertEqual(try store.list(), [script])
+        #expect(FileManager.default.fileExists(atPath: store.plistURL(for: "web").path))
+        #expect(FileManager.default.fileExists(atPath: store.logDirectory.path))
+        #expect(try store.list() == [script])
     }
 
-    func testWrittenPlistIsValidXmlPropertyList() throws {
+    @Test func writtenPlistIsValidXmlPropertyList() throws {
         try store.write(makeScript(name: "api", command: "api serve"))
         let data = try Data(contentsOf: store.plistURL(for: "api"))
         let object = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)
 
-        XCTAssertTrue(object is [String: Any])
-        XCTAssertEqual((object as? [String: Any])?["AppCommand"] as? String, "api serve")
+        #expect(object is [String: Any])
+        #expect((object as? [String: Any])?["AppCommand"] as? String == "api serve")
     }
 
-    func testListSortsByName() throws {
+    @Test func listSortsByName() throws {
         try store.write(makeScript(name: "api", command: "api serve"))
         try store.write(makeScript(name: "web"))
 
-        XCTAssertEqual(try store.list().map(\.name), ["api", "web"])
+        #expect(try store.list().map(\.name) == ["api", "web"])
     }
 
-    func testDeleteRemovesOnlyThatPlist() throws {
+    @Test func deleteRemovesOnlyThatPlist() throws {
         try store.write(makeScript(name: "web"))
         try store.write(makeScript(name: "api", command: "api serve"))
 
         try store.delete(name: "web")
 
-        XCTAssertFalse(FileManager.default.fileExists(atPath: store.plistURL(for: "web").path))
-        XCTAssertEqual(try store.list().map(\.name), ["api"])
+        #expect(!FileManager.default.fileExists(atPath: store.plistURL(for: "web").path))
+        #expect(try store.list().map(\.name) == ["api"])
     }
 
-    func testDeleteMissingScriptSucceeds() throws {
-        XCTAssertNoThrow(try store.delete(name: "web"))
+    @Test func deleteMissingScriptSucceeds() {
+        #expect(throws: Never.self) { try self.store.delete(name: "web") }
     }
 
-    func testMalformedPlistIsSkipped() throws {
+    @Test func malformedPlistIsSkipped() throws {
         try store.write(makeScript(name: "web"))
         try store.ensureDirectories()
 
@@ -78,23 +79,19 @@ final class LaunchAgentStoreTests: XCTestCase {
         let foreign = store.agentsDirectory.appendingPathComponent("com.example.other.plist")
         try Data("<?xml version=\"1.0\"?><plist version=\"1.0\"><dict/></plist>".utf8).write(to: foreign)
 
-        XCTAssertEqual(try store.list().map(\.name), ["web"])
+        #expect(try store.list().map(\.name) == ["web"])
     }
 
-    func testValidateNewNameRejectsExistingLabel() throws {
+    @Test func validateNewNameRejectsExistingLabel() throws {
         try store.write(makeScript(name: "web"))
 
-        XCTAssertThrowsError(try store.validateNewName("web")) { error in
-            XCTAssertEqual(error as? ScriptError, .duplicateName("web"))
-        }
-        XCTAssertNoThrow(try store.validateNewName("api"))
+        #expect(throws: ScriptError.duplicateName("web")) { try self.store.validateNewName("web") }
+        #expect(throws: Never.self) { try self.store.validateNewName("api") }
     }
 
-    func testWriteRejectsInvalidName() {
+    @Test func writeRejectsInvalidName() {
         let script = makeScript(name: "bad name")
 
-        XCTAssertThrowsError(try store.write(script)) { error in
-            XCTAssertEqual(error as? ScriptError, .invalidName("bad name"))
-        }
+        #expect(throws: ScriptError.invalidName("bad name")) { try self.store.write(script) }
     }
 }

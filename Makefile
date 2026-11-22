@@ -1,13 +1,16 @@
-.PHONY: build dev test clean
+.PHONY: build bundle dev test clean
 
 build:
 	./scripts/build.sh
+
+bundle:
+	./scripts/bundle.sh
 
 dev:
 	./scripts/dev.sh
 
 test:
-	xcodebuild test -project Stayman.xcodeproj -scheme Stayman
+	swift test
 
 clean:
-	rm -rf build
+	rm -rf build .build

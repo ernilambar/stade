@@ -8,9 +8,9 @@ struct LogView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    @State private var text = ""
-    @State private var logExists = false
-    @State private var errorMessage: String?
+    @StateBox private var text = ""
+    @StateBox private var logExists = false
+    @StateBox private var errorMessage: String?
 
     private let refreshTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
 

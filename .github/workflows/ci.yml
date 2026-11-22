@@ -6,14 +6,16 @@ on:
     paths: &paths
       - "Sources/**"
       - "Tests/**"
+      - "Resources/**"
       - "Config/**"
-      - "Stayman.xcodeproj/**"
+      - "Package.swift"
       - "scripts/**"
       - "Makefile"
       - ".github/workflows/ci.yml"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths: *paths
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -23,11 +25,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Lint
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Check scripts
+        run: |
+          bash -n scripts/*.sh
+          shellcheck scripts/*.sh
+
   build-and-test:
     name: Build and test
     if: ${{ !github.event.pull_request.draft }}
-    # macOS is required: the SwiftUI macro plugin ships with Xcode only.
-    runs-on: macos-15
+    # macOS is required for SwiftUI and AppKit. Tests run here rather than
+    # locally: `swift test` with the Command Line Tools 6.4 intermittently
+    # fails to load the swift-testing macro plugin.
+    runs-on: macos-26
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
@@ -35,18 +54,15 @@ jobs:
           fetch-depth: 1
 
       - name: Show toolchain
-        run: xcodebuild -version
+        run: swift --version
 
-      - name: Check project and scripts
-        run: |
-          plutil -lint Stayman.xcodeproj/project.pbxproj
-          bash -n scripts/*.sh
+      # Compiler warnings are the lint gate for Swift code.
+      - name: Build
+        run: swift build -Xswiftc -warnings-as-errors
 
-      # `test` also builds the app, so the separate build gate is redundant.
-      - name: Build and test
-        run: |
-          xcodebuild test \
-            -project Stayman.xcodeproj \
-            -scheme Stayman \
-            -destination 'platform=macOS' \
-            -derivedDataPath build/DerivedData
+      - name: Test
+        run: swift test
+
+      # Builds the app bundle the same way a release does.
+      - name: Bundle
+        run: ./scripts/bundle.sh --release
