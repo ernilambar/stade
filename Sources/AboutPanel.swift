@@ -1,9 +1,9 @@
 import AppKit
 
 enum AboutPanel {
-    static let author = "Nilambar Sharma"
-    static let authorURL = "https://nilambar.net/"
-    static let repositoryURL = "https://github.com/ernilambar/stayman"
+    static let authorURL = URL(string: "https://nilambar.net/")!
+    static let repositoryURL = URL(string: "https://github.com/ernilambar/stayman")!
+    static let licenseURL = URL(string: "https://github.com/ernilambar/stayman/blob/main/LICENSE")!
 
     static func show() {
         let paragraph = NSMutableParagraphStyle()
@@ -12,21 +12,18 @@ enum AboutPanel {
         let font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
         let credits = NSMutableAttributedString()
 
-        func append(_ text: String, link: String? = nil) {
+        func append(_ text: String, link: URL? = nil) {
             var attributes: [NSAttributedString.Key: Any] = [
                 .font: font,
                 .paragraphStyle: paragraph,
             ]
-            if let link, let url = URL(string: link) {
-                attributes[.link] = url
+            if let link {
+                attributes[.link] = link
             }
             credits.append(NSAttributedString(string: text, attributes: attributes))
         }
 
-        append(author + "\n")
-        append(authorURL, link: authorURL)
-        append("\n")
-        append(repositoryURL, link: repositoryURL)
+        append(authorURL.absoluteString, link: authorURL)
 
         NSApplication.shared.orderFrontStandardAboutPanel(options: [
             .applicationName: AppInfo.name,
