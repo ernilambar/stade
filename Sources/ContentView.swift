@@ -3,7 +3,7 @@ import Combine
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var model = ScriptListModel()
+    @ObservedObject var model: ScriptListModel
 
     @State private var selection: String?
     @State private var presentedSheet: PresentedSheet?
@@ -32,6 +32,18 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 780, minHeight: 420)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 0) {
+                Divider()
+                Text("macOS may show “Background item added”. Keep \(AppInfo.name) allowed in System Settings → General → Login Items → Allow in the Background.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+            }
+        }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
@@ -155,6 +167,12 @@ private struct ScriptRow: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
+
+                if case .exited(let code) = status, code != 0 {
+                    Text("Keeps exiting. launchd retries every ~10 s. Check the log.")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                }
             }
 
             Spacer(minLength: 12)

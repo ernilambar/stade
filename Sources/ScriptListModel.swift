@@ -1,3 +1,4 @@
+import AppKit
 import Combine
 import Foundation
 
@@ -151,11 +152,48 @@ final class ScriptListModel: ObservableObject {
         let store = self.store
         let launchctl = self.launchctl
         perform {
-            try launchctl.bootout(script.label)
-            try launchctl.waitUntilUnloaded(label: script.label)
-            try store.delete(name: script.name)
-            try launchctl.enable(script.label)
+            try deleteScript(script, store: store, launchctl: launchctl)
         }
+    }
+
+    /// Removes every managed plist and quits. Stays open with an error if any removal fails.
+    func removeAllAndQuit() {
+        let store = self.store
+        let launchctl = self.launchctl
+        Task.detached(priority: .userInitiated) {
+            let failures = ScriptListModel.removeAll(store: store, launchctl: launchctl)
+
+            await MainActor.run {
+                if failures.isEmpty {
+                    NSApplication.shared.terminate(nil)
+                } else {
+                    self.errorMessage = failures.joined(separator: "\n")
+                    self.refresh()
+                }
+            }
+        }
+    }
+
+    /// Boots out and deletes every managed plist, including malformed ones.
+    nonisolated static func removeAll(store: LaunchAgentStore, launchctl: Launchctl) -> [String] {
+        var failures: [String] = []
+
+        do {
+            for label in try store.managedLabels() {
+                do {
+                    try launchctl.bootout(label)
+                    try launchctl.waitUntilUnloaded(label: label)
+                    try store.deleteManagedPlist(label: label)
+                    try launchctl.enable(label)
+                } catch {
+                    failures.append("\(label): \(error.localizedDescription)")
+                }
+            }
+        } catch {
+            failures.append(error.localizedDescription)
+        }
+
+        return failures
     }
 
     func validateNewName(_ name: String) throws {
@@ -207,4 +245,11 @@ struct ScriptUpdateError: LocalizedError {
     var errorDescription: String? {
         "\(original.localizedDescription) The previous script could not be restarted: \(rollback.localizedDescription)"
     }
+}
+
+private func deleteScript(_ script: Script, store: LaunchAgentStore, launchctl: Launchctl) throws {
+    try launchctl.bootout(script.label)
+    try launchctl.waitUntilUnloaded(label: script.label)
+    try store.delete(name: script.name)
+    try launchctl.enable(script.label)
 }

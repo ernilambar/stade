@@ -105,4 +105,36 @@ final class LaunchAgentStore: @unchecked Sendable {
     func validateNewName(_ name: String) throws {
         try ScriptName.validate(name, existing: Set(try list().map(\.name)))
     }
+
+    /// Labels derived from managed plist filenames, including malformed plists.
+    func managedLabels() throws -> [String] {
+        try ensureDirectories()
+
+        let urls = try fileManager.contentsOfDirectory(
+            at: agentsDirectory,
+            includingPropertiesForKeys: nil,
+            options: []
+        )
+
+        return urls.compactMap { url in
+            guard url.pathExtension == "plist" else {
+                return nil
+            }
+            let label = url.deletingPathExtension().lastPathComponent
+            return label.hasPrefix(AppInfo.agentLabelPrefix) ? label : nil
+        }
+        .sorted()
+    }
+
+    func deleteManagedPlist(label: String) throws {
+        guard label.hasPrefix(AppInfo.agentLabelPrefix) else {
+            return
+        }
+
+        let url = agentsDirectory.appendingPathComponent(label + ".plist")
+        guard fileManager.fileExists(atPath: url.path) else {
+            return
+        }
+        try fileManager.removeItem(at: url)
+    }
 }
