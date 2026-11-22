@@ -61,7 +61,7 @@ The `CI` workflow runs the same checks plus `swift test` on every push to
 | `Sources/ScriptListModel.swift` | Main-actor view model |
 | `Sources/ContentView.swift` | Main window, list, actions |
 | `Sources/EditScriptView.swift` | Add and edit sheet |
-| `Sources/LogView.swift`, `Sources/LogFile.swift` | Log viewer, tail, compaction |
+| `Sources/LogView.swift`, `Sources/LogTextView.swift`, `Sources/LogFile.swift` | Log sheet, read-only text view, tail, merge, compaction |
 | `Tests/` | Unit tests |
 | `Resources/AppIcon.iconset` | App icon |
 | `Package.swift` | SwiftPM targets |

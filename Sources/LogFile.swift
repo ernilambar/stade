@@ -84,4 +84,56 @@ enum LogFile {
         defer { try? handle.close() }
         try handle.truncate(atOffset: 0)
     }
+
+    /// Caps how much output the viewer keeps in memory during a session.
+    static let maximumDisplayedLines = 10_000
+
+    /// Merges a fresh tail read into the text already on screen.
+    ///
+    /// Consecutive tail reads overlap while the file only grows. Keeping the
+    /// overlap lets the view append instead of replacing all text, which
+    /// preserves scroll position and selection. An empty tail means the log
+    /// was cleared.
+    static func merge(
+        existing: String,
+        tail: String,
+        maximumLines: Int = LogFile.maximumDisplayedLines
+    ) -> String {
+        if existing.isEmpty || tail.isEmpty {
+            return tail
+        }
+
+        if tail.hasPrefix(existing) {
+            return tail
+        }
+
+        let oldLines = lines(in: existing)
+        let newLines = lines(in: tail)
+        let maximumOverlap = min(oldLines.count, newLines.count)
+
+        for overlap in stride(from: maximumOverlap, through: 1, by: -1)
+        where oldLines.suffix(overlap).elementsEqual(newLines.prefix(overlap)) {
+            let appended = Array(newLines.dropFirst(overlap))
+            guard !appended.isEmpty else {
+                return existing
+            }
+            return trim(oldLines + appended, maximumLines: maximumLines)
+        }
+
+        return tail
+    }
+
+    private static func lines(in text: String) -> [Substring] {
+        // A trailing newline terminates the last line rather than starting an
+        // empty one; dropping it keeps line joins from adding blank lines.
+        let body = text.hasSuffix("\n") ? text.dropLast() : text[...]
+        return body.split(separator: "\n", omittingEmptySubsequences: false)
+    }
+
+    private static func trim(_ lines: [Substring], maximumLines: Int) -> String {
+        guard lines.count > maximumLines else {
+            return lines.joined(separator: "\n")
+        }
+        return lines.suffix(maximumLines).joined(separator: "\n")
+    }
 }

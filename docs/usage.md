@@ -20,8 +20,10 @@ restart-on-crash would relaunch it in a loop. Stade adds `exec` to simple
 commands automatically so launchd tracks the real process.
 
 Output goes to `~/Library/Logs/Stade/<name>.log`; use **Logs** in the app to
-read it. **Stop** disables the agent and unloads it, so it stays stopped across
-logins until you press **Start**. Removing a script keeps its log.
+read it. The viewer follows new output, can pause and search, and **Open in
+Editor** opens the full file in your default text editor. **Stop** disables the
+agent and unloads it, so it stays stopped across logins until you press
+**Start**. Removing a script keeps its log.
 
 ## Serve a PHP app on one port
 
