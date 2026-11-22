@@ -18,7 +18,7 @@ fi
 CONFIGURATION="$(echo "$CONFIGURATION" | tr '[:upper:]' '[:lower:]')"
 
 OUTPUT_DIR="${BUNDLE_DIR:-build/$CONFIGURATION}"
-MIN_MACOS="13.0"
+MIN_MACOS="15.0"
 CATEGORY="public.app-category.developer-tools"
 COPYRIGHT="© 2026 Nilambar Sharma"
 

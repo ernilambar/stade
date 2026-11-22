@@ -4,7 +4,7 @@
 
 A macOS SwiftUI app that manages background scripts as launch agents: add,
 edit, remove, start, stop, and read logs without an external process manager.
-Swift 5.9+, SwiftUI/AppKit, macOS 13+ on Apple Silicon, no third-party
+Swift 5.9+, SwiftUI/AppKit, macOS 15+ on Apple Silicon, no third-party
 dependencies.
 
 ## Setup
@@ -84,7 +84,7 @@ Version lives only in `Config/App.xcconfig` (`APP_VERSION`, `APP_BUILD`);
   Xcode). Bundle resources are copied by `bundle.sh`, not by SwiftPM.
 - Under `swift test` there is no app bundle, so `AppInfo.bundleID` is empty;
   tests must not assume a real bundle ID.
-- Keep the app sandbox off, ad-hoc signing, deployment target 13.0, arm64-only
+- Keep the app sandbox off, ad-hoc signing, deployment target 15.0, arm64-only
   builds (`--arch arm64`), and zero third-party dependencies. UI text that
   needs the product name uses `AppInfo.name`; plist and log paths come from
   `LaunchAgentStore`/`AppInfo`.

@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- macOS 13 or later on Apple Silicon (M1 or newer)
+- macOS 15 or later on Apple Silicon (M1 or newer)
 - Command Line Tools (`xcode-select --install`) or Xcode, with Swift 5.9+
 - No third-party dependencies
 

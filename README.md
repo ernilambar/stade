@@ -14,7 +14,7 @@ add/edit/start/stop/remove controls and login-time startup.
 
 ## Requirements
 
-macOS 13 or later on Apple Silicon (M1 or newer).
+macOS 15 or later on Apple Silicon (M1 or newer).
 
 ## Install
 

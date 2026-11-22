@@ -5,7 +5,7 @@ import PackageDescription
 // Config/App.xcconfig; scripts/bundle.sh wraps the binary in <APP_NAME>.app.
 let package = Package(
     name: "AppCore",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS("15.0")],
     targets: [
         .executableTarget(
             name: "AppCore",
