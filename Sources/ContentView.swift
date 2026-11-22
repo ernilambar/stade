@@ -6,7 +6,7 @@ struct ContentView: View {
     @StateObject private var model = ScriptListModel()
 
     @State private var selection: String?
-    @State private var showingAdd = false
+    @State private var editorTarget: ScriptEditorTarget?
     @State private var pendingRemoval: Script?
 
     private let refreshTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
@@ -33,11 +33,21 @@ struct ContentView: View {
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
-                    showingAdd = true
+                    editorTarget = .add
                 } label: {
                     Label("Add", systemImage: "plus")
                 }
                 .help("Add Script")
+
+                Button {
+                    if let selectedScript {
+                        editorTarget = .edit(selectedScript)
+                    }
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+                .disabled(selectedScript == nil)
+                .help("Edit Script")
 
                 Button {
                     pendingRemoval = selectedScript
@@ -64,8 +74,13 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             model.refresh()
         }
-        .sheet(isPresented: $showingAdd) {
-            AddScriptView(model: model)
+        .sheet(item: $editorTarget) { target in
+            switch target {
+            case .add:
+                EditScriptView(model: model)
+            case .edit(let script):
+                EditScriptView(model: model, script: script)
+            }
         }
         .alert("Error", isPresented: errorBinding) {
             Button("OK", role: .cancel) {
@@ -222,6 +237,20 @@ private struct StatusDot: View {
             return "Stopped"
         case .notLoaded:
             return "Not loaded"
+        }
+    }
+}
+
+private enum ScriptEditorTarget: Identifiable {
+    case add
+    case edit(Script)
+
+    var id: String {
+        switch self {
+        case .add:
+            return "add"
+        case .edit(let script):
+            return script.id
         }
     }
 }

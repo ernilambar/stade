@@ -89,6 +89,61 @@ final class ScriptListModel: ObservableObject {
         }
     }
 
+    /// Reloads the agent with the new plist. If it was running or enabled, starts it
+    /// again; if that fails, the old plist is restored and the old script restarted.
+    func update(_ script: Script, to updated: Script) {
+        let store = self.store
+        let launchctl = self.launchctl
+        perform {
+            guard updated.name == script.name else {
+                throw ScriptError.invalidName(updated.name)
+            }
+
+            let snapshot = try launchctl.snapshot()
+            let status = snapshot.status(for: script.label)
+            let wasRunning: Bool
+            if case .running = status {
+                wasRunning = true
+            } else {
+                wasRunning = false
+            }
+            let shouldStart = wasRunning || !snapshot.disabled.contains(script.label)
+
+            let oldPlist = try store.readPlistData(name: script.name)
+
+            try launchctl.bootout(script.label)
+            try launchctl.waitUntilUnloaded(label: script.label)
+
+            do {
+                try store.write(updated)
+            } catch {
+                if shouldStart {
+                    try? launchctl.start(script)
+                }
+                throw error
+            }
+
+            guard shouldStart else {
+                return
+            }
+
+            do {
+                try launchctl.start(updated)
+            } catch {
+                guard let oldPlist else {
+                    throw error
+                }
+                do {
+                    try store.writePlistData(oldPlist, name: script.name)
+                    try launchctl.start(script)
+                } catch let rollbackError {
+                    throw ScriptUpdateError(original: error, rollback: rollbackError)
+                }
+                throw error
+            }
+        }
+    }
+
     /// Boot out, delete the plist, then clear the stored disabled entry. The log is kept.
     func remove(_ script: Script) {
         let store = self.store
@@ -145,5 +200,14 @@ final class ScriptListModel: ObservableObject {
         if errorMessage == nil {
             errorMessage = message
         }
+    }
+}
+
+struct ScriptUpdateError: LocalizedError {
+    let original: Error
+    let rollback: Error
+
+    var errorDescription: String? {
+        "\(original.localizedDescription) The previous script could not be restarted: \(rollback.localizedDescription)"
     }
 }

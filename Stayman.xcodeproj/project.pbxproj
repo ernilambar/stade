@@ -19,7 +19,7 @@
 		1A2B3C4D5E6F708100000030 /* Launchctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70810000002F /* Launchctl.swift */; };
 		1A2B3C4D5E6F708100000032 /* LaunchctlTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708100000031 /* LaunchctlTests.swift */; };
 		1A2B3C4D5E6F708100000034 /* ScriptListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708100000033 /* ScriptListModel.swift */; };
-		1A2B3C4D5E6F708100000036 /* AddScriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708100000035 /* AddScriptView.swift */; };
+		1A2B3C4D5E6F708100000036 /* EditScriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708100000035 /* EditScriptView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,7 +48,7 @@
 		1A2B3C4D5E6F70810000002F /* Launchctl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Launchctl.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708100000031 /* LaunchctlTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchctlTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708100000033 /* ScriptListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptListModel.swift; sourceTree = "<group>"; };
-		1A2B3C4D5E6F708100000035 /* AddScriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddScriptView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708100000035 /* EditScriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditScriptView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,7 +97,7 @@
 				1A2B3C4D5E6F70810000002F /* Launchctl.swift */,
 				1A2B3C4D5E6F70810000000B /* AppEntry.swift */,
 				1A2B3C4D5E6F70810000000C /* ContentView.swift */,
-				1A2B3C4D5E6F708100000035 /* AddScriptView.swift */,
+				1A2B3C4D5E6F708100000035 /* EditScriptView.swift */,
 				1A2B3C4D5E6F708100000033 /* ScriptListModel.swift */,
 				1A2B3C4D5E6F70810000000D /* Assets.xcassets */,
 			);
@@ -228,7 +228,7 @@
 				1A2B3C4D5E6F708100000030 /* Launchctl.swift in Sources */,
 				1A2B3C4D5E6F70810000000F /* AppEntry.swift in Sources */,
 				1A2B3C4D5E6F708100000010 /* ContentView.swift in Sources */,
-				1A2B3C4D5E6F708100000036 /* AddScriptView.swift in Sources */,
+				1A2B3C4D5E6F708100000036 /* EditScriptView.swift in Sources */,
 				1A2B3C4D5E6F708100000034 /* ScriptListModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -84,6 +84,23 @@ final class LaunchAgentStore: @unchecked Sendable {
         try fileManager.removeItem(at: url)
     }
 
+    /// Raw plist bytes, used to restore a script when an edit fails.
+    func readPlistData(name: String) throws -> Data? {
+        try ScriptName.validate(name)
+
+        let url = plistURL(for: name)
+        guard fileManager.fileExists(atPath: url.path) else {
+            return nil
+        }
+        return try Data(contentsOf: url)
+    }
+
+    func writePlistData(_ data: Data, name: String) throws {
+        try ScriptName.validate(name)
+        try ensureDirectories()
+        try data.write(to: plistURL(for: name), options: .atomic)
+    }
+
     /// Checks the name rules and rejects labels that already exist.
     func validateNewName(_ name: String) throws {
         try ScriptName.validate(name, existing: Set(try list().map(\.name)))
