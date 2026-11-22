@@ -101,4 +101,3 @@ ZIP_NAME=Stayman-macos-arm64 OUTPUT_DIR=dist ./scripts/build.sh
 - A clean exit (code 0) is not restarted.
 - Login Items shows scripts under Stayman, not several “zsh” entries.
 - The log view shows output; a bad command shows “command not found”.
-- “Remove All Scripts & Quit…” leaves no `net.nilambar.stayman.*.plist`.

@@ -31,7 +31,7 @@ latest release and leaves your scripts and logs in place.
 
 ## Uninstall
 
-Use “Remove All Scripts & Quit…” from the app menu while the app is open.
+Remove each script in the app before deleting it.
 
 Manual cleanup, for each script name:
 

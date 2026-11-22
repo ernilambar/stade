@@ -10,7 +10,6 @@ add/edit/start/stop/remove controls and login-time startup.
   quitting the app
 - Optional restart-on-crash; a clean exit stays stopped
 - Live status per script, with a built-in log viewer
-- “Remove All Scripts & Quit…” stops and deletes every agent, keeping logs
 - No third-party dependencies
 
 ## Requirements
