@@ -1,4 +1,3 @@
-import AppKit
 import Combine
 import Foundation
 
@@ -40,6 +39,9 @@ final class ScriptListModel: ObservableObject {
             let outcome: Result<(scripts: [Script], snapshot: LaunchctlSnapshot), Error>
             do {
                 let scripts = try store.list()
+                for script in scripts {
+                    try? LogFile.truncateIfNeeded(at: script.logURL(in: store.logDirectory))
+                }
                 outcome = .success((scripts, try launchctl.snapshot()))
             } catch {
                 outcome = .failure(error)
@@ -162,13 +164,8 @@ final class ScriptListModel: ObservableObject {
 
     // MARK: Logs
 
-    func openLog(for script: Script) {
-        let url = script.logURL(in: store.logDirectory)
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            errorMessage = "No log output yet."
-            return
-        }
-        NSWorkspace.shared.open(url)
+    func logURL(for script: Script) -> URL {
+        script.logURL(in: store.logDirectory)
     }
 
     // MARK: Helpers

@@ -20,6 +20,8 @@
 		1A2B3C4D5E6F708100000032 /* LaunchctlTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708100000031 /* LaunchctlTests.swift */; };
 		1A2B3C4D5E6F708100000034 /* ScriptListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708100000033 /* ScriptListModel.swift */; };
 		1A2B3C4D5E6F708100000036 /* EditScriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708100000035 /* EditScriptView.swift */; };
+		1A2B3C4D5E6F708100000038 /* LogFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708100000037 /* LogFile.swift */; };
+		1A2B3C4D5E6F70810000003A /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708100000039 /* LogView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 		1A2B3C4D5E6F708100000031 /* LaunchctlTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchctlTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708100000033 /* ScriptListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptListModel.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708100000035 /* EditScriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditScriptView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708100000037 /* LogFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFile.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708100000039 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,7 +102,9 @@
 				1A2B3C4D5E6F70810000000B /* AppEntry.swift */,
 				1A2B3C4D5E6F70810000000C /* ContentView.swift */,
 				1A2B3C4D5E6F708100000035 /* EditScriptView.swift */,
+				1A2B3C4D5E6F708100000039 /* LogView.swift */,
 				1A2B3C4D5E6F708100000033 /* ScriptListModel.swift */,
+				1A2B3C4D5E6F708100000037 /* LogFile.swift */,
 				1A2B3C4D5E6F70810000000D /* Assets.xcassets */,
 			);
 			path = Sources;
@@ -229,7 +235,9 @@
 				1A2B3C4D5E6F70810000000F /* AppEntry.swift in Sources */,
 				1A2B3C4D5E6F708100000010 /* ContentView.swift in Sources */,
 				1A2B3C4D5E6F708100000036 /* EditScriptView.swift in Sources */,
+				1A2B3C4D5E6F70810000003A /* LogView.swift in Sources */,
 				1A2B3C4D5E6F708100000034 /* ScriptListModel.swift in Sources */,
+				1A2B3C4D5E6F708100000038 /* LogFile.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

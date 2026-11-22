@@ -6,7 +6,7 @@ struct ContentView: View {
     @StateObject private var model = ScriptListModel()
 
     @State private var selection: String?
-    @State private var editorTarget: ScriptEditorTarget?
+    @State private var presentedSheet: PresentedSheet?
     @State private var pendingRemoval: Script?
 
     private let refreshTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
@@ -23,7 +23,9 @@ struct ContentView: View {
                             script: script,
                             status: model.statuses[script.label] ?? .notLoaded,
                             model: model
-                        )
+                        ) {
+                            presentedSheet = .log(script)
+                        }
                         .tag(script.id)
                     }
                 }
@@ -33,7 +35,7 @@ struct ContentView: View {
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
-                    editorTarget = .add
+                    presentedSheet = .addScript
                 } label: {
                     Label("Add", systemImage: "plus")
                 }
@@ -41,7 +43,7 @@ struct ContentView: View {
 
                 Button {
                     if let selectedScript {
-                        editorTarget = .edit(selectedScript)
+                        presentedSheet = .editScript(selectedScript)
                     }
                 } label: {
                     Label("Edit", systemImage: "pencil")
@@ -74,12 +76,14 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             model.refresh()
         }
-        .sheet(item: $editorTarget) { target in
-            switch target {
-            case .add:
+        .sheet(item: $presentedSheet) { sheet in
+            switch sheet {
+            case .addScript:
                 EditScriptView(model: model)
-            case .edit(let script):
+            case .editScript(let script):
                 EditScriptView(model: model, script: script)
+            case .log(let script):
+                LogView(script: script, logURL: model.logURL(for: script))
             }
         }
         .alert("Error", isPresented: errorBinding) {
@@ -136,6 +140,7 @@ private struct ScriptRow: View {
     let script: Script
     let status: LaunchctlStatus
     @ObservedObject var model: ScriptListModel
+    let onShowLog: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
@@ -171,7 +176,7 @@ private struct ScriptRow: View {
                     model.restart(script)
                 }
                 Button("Logs") {
-                    model.openLog(for: script)
+                    onShowLog()
                 }
             }
             .buttonStyle(.borderless)
@@ -241,16 +246,19 @@ private struct StatusDot: View {
     }
 }
 
-private enum ScriptEditorTarget: Identifiable {
-    case add
-    case edit(Script)
+private enum PresentedSheet: Identifiable {
+    case addScript
+    case editScript(Script)
+    case log(Script)
 
     var id: String {
         switch self {
-        case .add:
+        case .addScript:
             return "add"
-        case .edit(let script):
-            return script.id
+        case .editScript(let script):
+            return "edit-\(script.id)"
+        case .log(let script):
+            return "log-\(script.id)"
         }
     }
 }
