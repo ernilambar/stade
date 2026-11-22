@@ -3,6 +3,7 @@ import SwiftUI
 
 @main
 struct AppEntry: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var model = ScriptListModel()
 
     var body: some Scene {
@@ -37,5 +38,11 @@ struct AppEntry: App {
         }
 
         model.removeAllAndQuit()
+    }
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        true
     }
 }
