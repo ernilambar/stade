@@ -75,11 +75,20 @@ jobs:
           GH_REPO: ${{ github.repository }}
           TAG: ${{ inputs.tag || github.ref_name }}
         run: |
+          git fetch --tags --force --quiet
+          PREVIOUS_TAG="$(git tag --sort=-v:refname | awk -v tag="$TAG" 'found { print; exit } $0 == tag { found = 1 }')"
+          if [ -n "$PREVIOUS_TAG" ]; then
+            DIFF_URL="https://github.com/$GH_REPO/compare/$PREVIOUS_TAG...$TAG"
+          else
+            DIFF_URL="https://github.com/$GH_REPO/commits/$TAG"
+          fi
+
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/*.zip --clobber
+            gh release edit "$TAG" --notes "$DIFF_URL"
           else
             gh release create "$TAG" dist/*.zip \
               --title "$TAG" \
-              --generate-notes \
+              --notes "$DIFF_URL" \
               --target "$(git rev-parse HEAD)"
           fi

@@ -3,6 +3,7 @@ import AppKit
 enum AboutPanel {
     static let authorURL = URL(string: "https://nilambar.net/")!
     static let repositoryURL = URL(string: "https://github.com/ernilambar/stade")!
+    static let usageURL = URL(string: "https://github.com/ernilambar/stade/blob/main/docs/usage.md")!
     static let licenseURL = URL(string: "https://github.com/ernilambar/stade/blob/main/LICENSE")!
 
     static func show() {

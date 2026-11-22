@@ -83,6 +83,8 @@ struct EditScriptView: View {
             Spacer()
 
             HStack {
+                Link("Usage Guide", destination: AboutPanel.usageURL)
+                    .font(.callout)
                 Spacer()
                 Button("Cancel", role: .cancel) {
                     dismiss()

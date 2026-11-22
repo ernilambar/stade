@@ -30,6 +30,8 @@ This downloads the latest release and installs it into `/Applications`.
 
 - [Install options](docs/install.md) — manual download, first launch, updating,
   and uninstalling
+- [Usage](docs/usage.md) — how scripts run, with PHP server and background
+  worker use cases
 
 ## Contributing
 

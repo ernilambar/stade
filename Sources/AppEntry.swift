@@ -28,6 +28,9 @@ struct AppEntry: App {
                 Button("GitHub Repository") {
                     NSWorkspace.shared.open(AboutPanel.repositoryURL)
                 }
+                Button("Usage Guide") {
+                    NSWorkspace.shared.open(AboutPanel.usageURL)
+                }
                 Button("License") {
                     NSWorkspace.shared.open(AboutPanel.licenseURL)
                 }
