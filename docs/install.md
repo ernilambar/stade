@@ -5,9 +5,9 @@ the manual download, first launch, updating, and uninstalling.
 
 ## Manual download
 
-Download `Stayman-macos-arm64.zip` from the
-[latest release](https://github.com/ernilambar/stayman/releases/latest), unzip
-it, and move `Stayman.app` to `/Applications`.
+Download `Stade-macos-arm64.zip` from the
+[latest release](https://github.com/ernilambar/stade/releases/latest), unzip
+it, and move `Stade.app` to `/Applications`.
 
 ## First launch
 
@@ -17,16 +17,16 @@ app once, then go to System Settings → Privacy & Security and click
 “Open Anyway”. Alternatively:
 
 ```sh
-xattr -dr com.apple.quarantine /Applications/Stayman.app
+xattr -dr com.apple.quarantine /Applications/Stade.app
 ```
 
-macOS may show a “Background item added” notice; this is normal. Keep Stayman
+macOS may show a “Background item added” notice; this is normal. Keep Stade
 allowed under System Settings → General → Login Items → Allow in the
 Background.
 
 ## Update
 
-Run the install script again. It replaces `/Applications/Stayman.app` with the
+Run the install script again. It replaces `/Applications/Stade.app` with the
 latest release and leaves your scripts and logs in place.
 
 ## Uninstall
@@ -36,15 +36,15 @@ Remove each script in the app before deleting it.
 Manual cleanup, for each script name:
 
 ```sh
-launchctl bootout gui/$(id -u)/net.nilambar.stayman.<name>
-rm ~/Library/LaunchAgents/net.nilambar.stayman.*.plist
+launchctl bootout gui/$(id -u)/net.nilambar.stade.<name>
+rm ~/Library/LaunchAgents/net.nilambar.stade.*.plist
 ```
 
 Then remove the app:
 
 ```sh
-rm -rf /Applications/Stayman.app
+rm -rf /Applications/Stade.app
 ```
 
-Log files in `~/Library/Logs/Stayman/` are kept. Deleting only the app leaves
+Log files in `~/Library/Logs/Stade/` are kept. Deleting only the app leaves
 the agents running at every login.

@@ -21,7 +21,7 @@ swift test
 No dependencies to install. `swift build` produces a bare binary;
 `scripts/bundle.sh` wraps it into `build/<config>/<APP_NAME>.app` (icon via
 `iconutil`, `Info.plist` written from `Config/App.xcconfig`, ad-hoc signed).
-The `Release` workflow publishes `Stayman-macos-arm64.zip` from a `v*` tag.
+The `Release` workflow publishes `Stade-macos-arm64.zip` from a `v*` tag.
 
 ## Commands
 
@@ -48,12 +48,12 @@ Version lives only in `Config/App.xcconfig` (`APP_VERSION`, `APP_BUILD`);
 - Tag: the user creates and pushes `v<APP_VERSION>` (for example `v0.2.0`).
   Never commit, tag, or push yourself, and never create, move, or delete tags.
   The `Release` workflow's `verify` job fails when the tag and `APP_VERSION`
-  differ, then `build` publishes `Stayman-macos-arm64.zip` to the GitHub
+  differ, then `build` publishes `Stade-macos-arm64.zip` to the GitHub
   release.
 - Rebuild an existing release: the user runs the `Release` workflow manually
   with its `tag` input; it replaces the asset without retagging.
 - Local package: `make build` (or `./scripts/build.sh`) writes
-  `build/Stayman-<version>.zip`; the workflow sets `ZIP_NAME` and `OUTPUT_DIR`
+  `build/Stade-<version>.zip`; the workflow sets `ZIP_NAME` and `OUTPUT_DIR`
   as shown in `CONTRIBUTING.md`.
 
 ## Conventions

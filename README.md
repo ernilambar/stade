@@ -1,4 +1,4 @@
-# Stayman
+# Stade
 
 A native macOS app that runs background scripts as launch agents, with
 add/edit/start/stop/remove controls and login-time startup.
@@ -21,7 +21,7 @@ macOS 13 or later on Apple Silicon (M1 or newer).
 Install with the install script:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/ernilambar/stayman/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/ernilambar/stade/main/scripts/install.sh | sh
 ```
 
 This downloads the latest release and installs it into `/Applications`.

@@ -67,7 +67,7 @@ jobs:
         run: swift test
 
       - name: Package
-        run: ZIP_NAME=Stayman-macos-arm64 OUTPUT_DIR=dist ./scripts/build.sh
+        run: ZIP_NAME=Stade-macos-arm64 OUTPUT_DIR=dist ./scripts/build.sh
 
       - name: Publish
         env:
