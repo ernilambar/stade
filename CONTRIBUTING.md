@@ -13,8 +13,8 @@ the terminal:
 
 ```sh
 swift build                       # compile only
-./scripts/bundle.sh               # build/debug/Stayman.app
-./scripts/bundle.sh --release     # build/release/Stayman.app
+./scripts/bundle.sh               # build/debug/Stade.app
+./scripts/bundle.sh --release     # build/release/Stade.app
 ```
 
 Use `@StateBox` instead of `@State` in views; the macOS 27 SDK's `@State`
@@ -78,17 +78,17 @@ the bundle via `AppInfo`. See [AGENTS.md](AGENTS.md) for the full conventions.
 ```
 
 This builds a Release app, verifies its signature, and writes
-`build/Stayman-<version>.zip`. Set `ZIP_NAME` to override the zip name, as the
+`build/Stade-<version>.zip`. Set `ZIP_NAME` to override the zip name, as the
 release workflow does:
 
 ```sh
-ZIP_NAME=Stayman-macos-arm64 OUTPUT_DIR=dist ./scripts/build.sh
+ZIP_NAME=Stade-macos-arm64 OUTPUT_DIR=dist ./scripts/build.sh
 ```
 
 1. Bump `APP_VERSION` in `Config/App.xcconfig`.
 2. Tag `v<version>` matching `APP_VERSION` and push the tag.
 3. The `Release` workflow verifies the tag, builds the arm64 bundle, and
-   publishes `Stayman-macos-arm64.zip` to the GitHub release.
+   publishes `Stade-macos-arm64.zip` to the GitHub release.
 4. Re-run the workflow from the Actions tab with an existing tag to rebuild
    its asset. Never commit `build/` or `dist/`.
 
@@ -99,5 +99,5 @@ ZIP_NAME=Stayman-macos-arm64 OUTPUT_DIR=dist ./scripts/build.sh
 - Log out and back in; started services run, stopped services stay stopped.
 - `kill -9 <pid>` restarts when “Restart on crash” is on.
 - A clean exit (code 0) is not restarted.
-- Login Items shows scripts under Stayman, not several “zsh” entries.
+- Login Items shows scripts under Stade, not several “zsh” entries.
 - The log view shows output; a bad command shows “command not found”.

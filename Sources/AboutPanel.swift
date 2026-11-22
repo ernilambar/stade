@@ -2,8 +2,8 @@ import AppKit
 
 enum AboutPanel {
     static let authorURL = URL(string: "https://nilambar.net/")!
-    static let repositoryURL = URL(string: "https://github.com/ernilambar/stayman")!
-    static let licenseURL = URL(string: "https://github.com/ernilambar/stayman/blob/main/LICENSE")!
+    static let repositoryURL = URL(string: "https://github.com/ernilambar/stade")!
+    static let licenseURL = URL(string: "https://github.com/ernilambar/stade/blob/main/LICENSE")!
 
     static func show() {
         let paragraph = NSMutableParagraphStyle()
