@@ -17,7 +17,10 @@ struct AppEntry: App {
                     AboutPanel.show()
                 }
             }
-            CommandGroup(after: .help) {
+            // Replacing the whole Help group drops the automatic "<App name>
+            // Help" item AppKit adds, which only ever offers "Help isn't
+            // available for <App name>".
+            CommandGroup(replacing: .help) {
                 Button("\(AppInfo.name) Repository") {
                     NSWorkspace.shared.open(AboutPanel.repositoryURL)
                 }
