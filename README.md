@@ -7,8 +7,6 @@ they start at login and keep running after the app quits.
 ## Requirements
 
 - macOS 13 or later
-- Xcode 15 or later to build (Swift 5.9+)
-- No third-party dependencies
 
 ## Install
 
@@ -31,37 +29,6 @@ macOS may show a “Background item added” notice; this is normal. Keep Stayma
 allowed under System Settings → General → Login Items → Allow in the
 Background.
 
-## Build
-
-```sh
-open Stayman.xcodeproj
-```
-
-Run the `Stayman` scheme.
-
-Release build and zip:
-
-```sh
-./scripts/build.sh
-```
-
-The zip is written to `build/Stayman-<version>.zip`. `make build` does the same.
-Tests:
-
-```sh
-xcodebuild test -project Stayman.xcodeproj -scheme Stayman
-```
-
-or `make test`.
-
-## Release
-
-```sh
-./scripts/build.sh
-git tag v<version>
-# attach build/Stayman-<version>.zip to a GitHub release
-```
-
 ## Uninstall
 
 Use “Remove All Scripts & Quit…” from the app menu while the app is open.
@@ -73,13 +40,12 @@ launchctl bootout gui/$(id -u)/net.nilambar.stayman.<name>
 rm ~/Library/LaunchAgents/net.nilambar.stayman.*.plist
 ```
 
-Log files in `~/Library/Logs/Stayman/` are kept; delete them manually if
-desired. Deleting only the app leaves the agents running at every login.
+Log files in `~/Library/Logs/Stayman/` are kept. Deleting only the app leaves
+the agents running at every login.
 
-## Naming
+## Development
 
-The app name and bundle ID are defined once in `Config/App.xcconfig`. Swift code
-reads them from the bundle, so renaming the app does not require code changes.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Author
 
