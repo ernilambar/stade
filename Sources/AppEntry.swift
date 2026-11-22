@@ -10,6 +10,7 @@ struct AppEntry: App {
         WindowGroup(AppInfo.name) {
             ContentView(model: model)
         }
+        .defaultSize(width: 900, height: 560)
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("About \(AppInfo.name)") {

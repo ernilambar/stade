@@ -38,7 +38,6 @@ struct ContentView: View {
                 Text("macOS may show “Background item added”. Keep \(AppInfo.name) allowed in System Settings → General → Login Items → Allow in the Background.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
