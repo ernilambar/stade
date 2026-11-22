@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  # Rebuild the asset of an existing release without cutting a new tag.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish the rebuilt asset to
+        required: true
+        type: string
+      ref:
+        description: Git revision to build (defaults to the branch you run this from)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Never cancel a publish halfway through.
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Check tag matches MARKETING_VERSION
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 1
+
+      - name: Check tag matches MARKETING_VERSION
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          version="$(sed -n 's/^[[:space:]]*MARKETING_VERSION = \([^;]*\);/\1/p' \
+            Stayman.xcodeproj/project.pbxproj | head -n 1)"
+          if [ -z "$version" ]; then
+            echo "MARKETING_VERSION not found in Stayman.xcodeproj/project.pbxproj" >&2
+            exit 1
+          fi
+          if [ "v$version" != "$TAG" ]; then
+            echo "Tag $TAG does not match MARKETING_VERSION $version" >&2
+            exit 1
+          fi
+
+  build:
+    name: Build and publish (macOS arm64)
+    needs: verify
+    # macos-15 runners are Apple Silicon, so the ad-hoc signed bundle is arm64.
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 1
+
+      - name: Package
+        run: ZIP_NAME=Stayman-macos-arm64 OUTPUT_DIR=dist ./scripts/build.sh
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/*.zip --clobber
+          else
+            gh release create "$TAG" dist/*.zip \
+              --title "$TAG" \
+              --generate-notes \
+              --target "$(git rev-parse HEAD)"
+          fi

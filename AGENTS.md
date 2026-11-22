@@ -4,7 +4,8 @@
 
 A macOS SwiftUI app that manages background scripts as launch agents: add,
 edit, remove, start, stop, and read logs without an external process manager.
-Swift 5.9+, SwiftUI/AppKit, macOS 13+, no third-party dependencies.
+Swift 5.9+, SwiftUI/AppKit, macOS 13+ on Apple Silicon, no third-party
+dependencies.
 
 ## Setup
 
@@ -16,7 +17,8 @@ xcode-select -p
 open Stayman.xcodeproj
 ```
 
-No dependencies to install. Release packaging is done by `make build`.
+No dependencies to install. Release packaging is done by `make build`; the
+`Release` workflow publishes `Stayman-macos-arm64.zip` from a `v*` tag.
 
 ## Commands
 
@@ -25,9 +27,12 @@ No dependencies to install. Release packaging is done by `make build`.
 - Lint: none configured; compiler warnings are the lint gate.
 - Format: none configured; match the surrounding file's style.
 - Typecheck: `xcodebuild -project Stayman.xcodeproj -scheme Stayman -configuration Debug build`
-- Release package: `make build`
+- Release package: `make build` (`ZIP_NAME`, `OUTPUT_DIR`, and `CONFIGURATION`
+  override the zip name, output directory, and configuration)
+- Install and relaunch: `./scripts/dev.sh` (Debug; `--release` for Release)
+- Latest release installer: `./scripts/install.sh`
 - Project file check: `plutil -lint Stayman.xcodeproj/project.pbxproj`
-- Build script check: `bash -n scripts/build.sh`
+- Script check: `bash -n scripts/*.sh`
 
 ## Conventions
 
@@ -45,11 +50,13 @@ No dependencies to install. Release packaging is done by `make build`.
 - Commands run as `/bin/zsh -l -i -c <command>`. Prepend `exec ` only to simple
   commands (no `&&`, `||`, `;`, `|`, `&`, or newlines), and read the user's
   command back from `AppCommand`, never from `ProgramArguments`.
-- Keep the app sandbox off, ad-hoc signing, deployment target 13.0, and zero
-  third-party dependencies. UI text that needs the product name uses
-  `AppInfo.name`; plist and log paths come from `LaunchAgentStore`/`AppInfo`.
-- Do not commit generated artifacts: `build/`, `DerivedData/`, and `xcuserdata/`
-  are ignored. Run `plutil -lint` after editing the project file by hand.
+- Keep the app sandbox off, ad-hoc signing, deployment target 13.0, arm64-only
+  builds (`ARCHS = arm64`), and zero third-party dependencies. UI text that
+  needs the product name uses `AppInfo.name`; plist and log paths come from
+  `LaunchAgentStore`/`AppInfo`.
+- Do not commit generated artifacts: `build/`, `dist/`, `DerivedData/`, and
+  `xcuserdata/` are ignored. Run `plutil -lint` after editing the project file
+  by hand.
 
 ## Quality gate
 
@@ -64,7 +71,7 @@ Also run when the related file changed:
 
 ```sh
 plutil -lint Stayman.xcodeproj/project.pbxproj
-bash -n scripts/build.sh
+bash -n scripts/*.sh
 ```
 
 If Xcode is unavailable, state that the gate could not be run; never report it

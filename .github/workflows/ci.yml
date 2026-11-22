@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths: &paths
+      - "Sources/**"
+      - "Tests/**"
+      - "Config/**"
+      - "Stayman.xcodeproj/**"
+      - "scripts/**"
+      - "Makefile"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths: *paths
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test
+    if: ${{ !github.event.pull_request.draft }}
+    # macOS is required: the SwiftUI macro plugin ships with Xcode only.
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Show toolchain
+        run: xcodebuild -version
+
+      - name: Check project and scripts
+        run: |
+          plutil -lint Stayman.xcodeproj/project.pbxproj
+          bash -n scripts/*.sh
+
+      # `test` also builds the app, so the separate build gate is redundant.
+      - name: Build and test
+        run: |
+          xcodebuild test \
+            -project Stayman.xcodeproj \
+            -scheme Stayman \
+            -destination 'platform=macOS' \
+            -derivedDataPath build/DerivedData

@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- macOS 13 or later
+- macOS 13 or later on Apple Silicon (M1 or newer)
 - Xcode 15 or later (Swift 5.9+)
 - No third-party dependencies
 
@@ -21,6 +21,15 @@ terminal:
 xcodebuild -project Stayman.xcodeproj -scheme Stayman -configuration Debug build
 ```
 
+To test login items and relaunch behaviour, install a Debug build into
+`/Applications` and open it:
+
+```sh
+./scripts/dev.sh
+```
+
+Pass `--release` to install a Release build instead.
+
 ## Tests
 
 ```sh
@@ -33,7 +42,7 @@ xcodebuild test -project Stayman.xcodeproj -scheme Stayman
 xcodebuild -project Stayman.xcodeproj -scheme Stayman -configuration Debug build
 xcodebuild test -project Stayman.xcodeproj -scheme Stayman
 plutil -lint Stayman.xcodeproj/project.pbxproj
-bash -n scripts/build.sh
+bash -n scripts/*.sh
 ```
 
 Both `xcodebuild` commands must exit 0. If Xcode is unavailable, say so rather
@@ -63,12 +72,19 @@ the bundle via `AppInfo`. See [AGENTS.md](AGENTS.md) for the full conventions.
 ```
 
 This builds a Release app, verifies its signature, and writes
-`build/Stayman-<version>.zip`.
+`build/Stayman-<version>.zip`. Set `ZIP_NAME` to override the zip name, as the
+release workflow does:
 
-1. Build and verify the zip.
-2. Tag `v<version>` matching `MARKETING_VERSION` in the project.
-3. Attach the zip to a GitHub release.
-4. Never commit `build/`.
+```sh
+ZIP_NAME=Stayman-macos-arm64 OUTPUT_DIR=dist ./scripts/build.sh
+```
+
+1. Bump `MARKETING_VERSION` in `Stayman.xcodeproj/project.pbxproj`.
+2. Tag `v<version>` matching `MARKETING_VERSION` and push the tag.
+3. The `Release` workflow verifies the tag, builds the arm64 bundle, and
+   publishes `Stayman-macos-arm64.zip` to the GitHub release.
+4. Re-run the workflow from the Actions tab with an existing tag to rebuild
+   its asset. Never commit `build/` or `dist/`.
 
 ## Manual test checklist
 

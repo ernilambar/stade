@@ -1,60 +1,43 @@
 # Stayman
 
-A small macOS app to add, edit, remove, start and stop background scripts (dev
-servers such as `glot serve` or `uplet serve`). Scripts run as launch agents, so
-they start at login and keep running after the app quits.
+A small, native macOS app to add, edit, remove, start, and stop background
+scripts (dev servers such as `glot serve` or `uplet serve`). Each script runs as
+a launch agent, so it starts at login and keeps running after the app quits.
+
+## Features
+
+- Add, edit, remove, start, stop, and restart scripts from one window
+- Runs each script as a launch agent, so it starts at login and survives
+  quitting the app
+- Optional restart-on-crash; a clean exit stays stopped
+- Live status per script, with a built-in log viewer
+- “Remove All Scripts & Quit…” stops and deletes every agent, keeping logs
+- No third-party dependencies
 
 ## Requirements
 
-- macOS 13 or later
+macOS 13 or later on Apple Silicon (M1 or newer).
 
 ## Install
 
-1. Download `Stayman-<version>.zip` from the GitHub releases page.
-2. Unzip it and move `Stayman.app` to `/Applications`.
-3. Open the app from `/Applications`.
-
-### First launch
-
-Release builds are ad-hoc signed, not notarized. On macOS 15 and later,
-right-click → Open no longer bypasses Gatekeeper for downloaded apps. Open the
-app once, then go to System Settings → Privacy & Security and click
-“Open Anyway”. Alternatively:
+Install with the install script:
 
 ```sh
-xattr -dr com.apple.quarantine /Applications/Stayman.app
+curl -fsSL https://raw.githubusercontent.com/ernilambar/stayman/main/scripts/install.sh | sh
 ```
 
-macOS may show a “Background item added” notice; this is normal. Keep Stayman
-allowed under System Settings → General → Login Items → Allow in the
-Background.
+This downloads the latest release and installs it into `/Applications`.
 
-## Uninstall
+## Docs
 
-Use “Remove All Scripts & Quit…” from the app menu while the app is open.
+- [Install options](docs/install.md) — manual download, first launch, updating,
+  and uninstalling
 
-Manual cleanup, for each script name:
+## Contributing
 
-```sh
-launchctl bootout gui/$(id -u)/net.nilambar.stayman.<name>
-rm ~/Library/LaunchAgents/net.nilambar.stayman.*.plist
-```
-
-Log files in `~/Library/Logs/Stayman/` are kept. Deleting only the app leaves
-the agents running at every login.
-
-## Development
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Author
-
-Nilambar Sharma — <https://nilambar.net/>
-
-## Repository
-
-<https://github.com/ernilambar/stayman>
+Bug reports and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
+to build it from source.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+[MIT](LICENSE) © Nilambar Sharma ([nilambar.net](https://nilambar.net/))
